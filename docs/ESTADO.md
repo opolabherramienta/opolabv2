@@ -32,20 +32,33 @@ Comprobaciones: `npm test` (40 pruebas), `npm run lint`, `npm run typecheck`,
 
 ### 1. Seguridad de la base de datos (bloquea el lanzamiento)
 
-Las 11 tablas se leen y se escriben sin iniciar sesión. Dani debe ejecutar
-`supabase/proposals/20261123_seguridad_lista_para_pegar.sql` en Supabase,
-SQL Editor. Va en transacciones: si algo no encaja se detiene con un mensaje
-y no cambia nada.
+Hecho el 23 de noviembre: Dani ejecutó
+`supabase/proposals/20261123_seguridad_lista_para_pegar.sql`. Comprobado con
+la clave pública: sin sesión, las 11 tablas y `security_is_admin` devuelven
+401 "permission denied", tanto al leer como al borrar.
 
-- Si se detiene, lo más probable es que ya exista un trigger en `auth.users`
-  o políticas previas. Adaptar el SQL al mensaje y volver a entregarlo.
-- Después de aplicarlo, repetir la prueba completa: registro nuevo,
-  onboarding, temas, crear plan, completar sesión, recalcular. Comprobar
-  también que un visitante sin sesión ya no lee nada (petición REST con la
-  clave pública a `profiles` debe devolver 0 filas).
-- Tras aplicarlo, los catálogos solo los podrá escribir un administrador.
-  Hay que dar el rol `admin` a la cuenta de Dani con un SQL manual
-  (`update public.profiles set role = 'admin' where email = '…'`).
+Prueba completa hecha el mismo día con una cuenta nueva
+(`prueba@claude.com`, creada por Dani): registro con perfil creado por el
+trigger, onboarding, elegir 3 temas, crear plan (29 sesiones), completar la
+sesión de hoy (tema estudiado, 20 XP, racha 1), añadir una sesión manual y
+recalcular (la manual y la completada siguen ahí). Con la sesión de esa
+cuenta, la API solo devuelve sus propias filas (1 perfil, sus 3 temas, sus
+sesiones), lee los catálogos, no puede escribir en ellos (0 filas cambiadas)
+y no puede ponerse el rol `admin` (403).
+
+Visto en la prueba, para el paso 2: al recalcular el mismo día en que se
+completa un tema, el plan pone hoy el tema siguiente y un "Repaso" del tema
+recién estudiado, y ese tema pierde sus repasos a 3, 7, 14 y 30 días (pasa
+a un repaso de mantenimiento cada 14 días).
+
+Falta para cerrar el paso:
+
+- Borrar la cuenta de prueba en Supabase, Authentication > Users, cuando ya
+  no haga falta.
+- Dani debe ejecutar `supabase/proposals/20261123_admin_y_perfiles.sql`
+  cambiando `TU_EMAIL`: crea el perfil de las cuentas anteriores al trigger
+  que no lo tengan y le da el rol `admin`. Sin ese rol nadie puede escribir
+  en los catálogos desde la app.
 
 ### 2. Prueba completa y arreglos
 
