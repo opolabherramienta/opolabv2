@@ -1,14 +1,14 @@
-﻿import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from "next";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Bricolage_Grotesque({
+  variable: "--font-opolab-display",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = Figtree({
+  variable: "--font-opolab-body",
   subsets: ["latin"],
 });
 
@@ -25,9 +25,9 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-50 text-slate-950">{children}</body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

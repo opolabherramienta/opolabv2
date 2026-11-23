@@ -100,8 +100,8 @@ export default async function CalendarioPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        description="Planifica tus sesiones de estudio, repasos y simulacros."
-        title="Mi calendario"
+        description="Reparte tus sesiones por días y marca lo que vas cumpliendo."
+        title="Calendario"
       />
 
       {loadError ? (

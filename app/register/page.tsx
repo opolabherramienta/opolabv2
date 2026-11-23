@@ -1,5 +1,6 @@
-﻿import { RegisterForm } from "@/components/auth/RegisterForm";
-import { Card } from "@/components/ui/Card";
+import Link from "next/link";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { RegisterForm } from "@/components/auth/RegisterForm";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -16,14 +17,16 @@ export default async function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
-      <Card className="w-full max-w-md">
-        <h1 className="text-2xl font-bold text-slate-950">Crear cuenta</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          Crea tu cuenta para empezar a planificar tu oposición.
-        </p>
-        <RegisterForm />
-      </Card>
-    </main>
+    <AuthShell
+      description="En cinco minutos tienes tu temario cargado y tu plan en marcha."
+      footer={
+        <Link className="text-violet-700" href="/login">
+          Ya tengo cuenta
+        </Link>
+      }
+      title="Crea tu cuenta"
+    >
+      <RegisterForm />
+    </AuthShell>
   );
 }

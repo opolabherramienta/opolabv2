@@ -16,7 +16,7 @@ export function ForgotPasswordForm() {
   );
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
+    <form action={formAction} className="mt-6 grid grid-cols-1 gap-4">
       <Input
         autoComplete="email"
         id="email"
@@ -27,19 +27,19 @@ export function ForgotPasswordForm() {
         type="email"
       />
       {state.error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
           {state.error}
         </p>
       ) : null}
       {state.message ? (
         <p
-          className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800"
+          className="rounded-xl bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-800"
           role="status"
         >
           {state.message}
         </p>
       ) : null}
-      <Button className="mt-2 w-full" disabled={pending} type="submit">
+      <Button className="mt-2 w-full" size="lg" disabled={pending} type="submit">
         {pending ? "Enviando..." : "Enviar enlace"}
       </Button>
     </form>

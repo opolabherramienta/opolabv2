@@ -1,6 +1,4 @@
-﻿import { Card } from "@/components/ui/Card";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { StatCard } from "@/components/ui/StatCard";
+import { ProgressView } from "@/components/progress/progress-view";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -44,19 +42,6 @@ type CalendarTask = {
   task_date: string | null;
   task_type: CalendarTaskType | null;
   status: CalendarTaskStatus | null;
-};
-
-type ProgressBarProps = {
-  label: string;
-  value: number;
-  detail: string;
-  tone?: "violet" | "green" | "orange";
-};
-
-const barToneClasses: Record<NonNullable<ProgressBarProps["tone"]>, string> = {
-  violet: "bg-violet-700",
-  green: "bg-emerald-600",
-  orange: "bg-orange-500",
 };
 
 function getLoadError(errors: Array<{ message: string } | null>) {
@@ -107,24 +92,6 @@ function formatDate(value: string | null) {
     month: "short",
     year: "numeric",
   }).format(new Date(year, month - 1, day));
-}
-
-function ProgressBar({ label, value, detail, tone = "violet" }: ProgressBarProps) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <p className="font-medium text-slate-700">{label}</p>
-        <p className="font-semibold text-slate-950">{value}%</p>
-      </div>
-      <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-        <div
-          className={["h-full rounded-full", barToneClasses[tone]].join(" ")}
-          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        />
-      </div>
-      <p className="text-xs text-slate-500">{detail}</p>
-    </div>
-  );
 }
 
 function buildRecommendations(
@@ -293,152 +260,16 @@ export default async function ProgresoPage() {
   const recommendations = buildRecommendations(topicStats, practicalStats, taskStats);
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        description="Consulta tu avance real en temas, prácticos y planificación."
-        title="Mi progreso"
-      />
-
-      {loadError ? (
-        <Card>
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            {loadError}
-          </p>
-        </Card>
-      ) : null}
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <StatCard
-          label="Avance general"
-          tone="green"
-          value={`${generalProgressPercent}%`}
-        />
-        <StatCard label="Temas estudiados" value={`${topicStats.studied}/${topicStats.selected}`} />
-        <StatCard label="Prácticos dominados" value={`${practicalStats.mastered}/${practicalStats.total}`} />
-        <StatCard label="Tareas completadas" value={`${taskStats.completed}/${taskStats.total}`} />
-        <StatCard
-          label="Próxima tarea"
-          tone="orange"
-          value={nextPendingTask ? formatDate(nextPendingTask.task_date) : "Sin tareas"}
-        />
-      </div>
-
-      <Card>
-        <h2 className="text-lg font-semibold text-slate-950">Resumen general</h2>
-        <div className="mt-5 grid gap-5 lg:grid-cols-2">
-          <ProgressBar
-            detail={`${topicStats.studied} de ${topicStats.selected} temas seleccionados estudiados`}
-            label="Temas estudiados"
-            tone="green"
-            value={topicStudiedPercent}
-          />
-          <ProgressBar
-            detail={`${topicStats.summarized} de ${topicStats.selected} temas seleccionados con resumen`}
-            label="Temas con resumen"
-            value={topicSummaryPercent}
-          />
-          <ProgressBar
-            detail={`${practicalStats.mastered} de ${practicalStats.total} prácticos dominados`}
-            label="Prácticos dominados"
-            tone="orange"
-            value={practicalMasteredPercent}
-          />
-          <ProgressBar
-            detail={`${taskStats.completed} de ${taskStats.total} tareas completadas`}
-            label="Planificación completada"
-            tone="green"
-            value={completedTasksPercent}
-          />
-        </div>
-      </Card>
-
-      <div className="grid gap-6 xl:grid-cols-3">
-        <Card>
-          <h2 className="text-lg font-semibold text-slate-950">Temas</h2>
-          {topicStats.total === 0 ? (
-            <p className="mt-4 text-sm leading-6 text-slate-600">
-              Sin temas registrados.
-            </p>
-          ) : (
-            <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-              <Metric label="Registrados" value={topicStats.total} />
-              <Metric label="Seleccionados" value={topicStats.selected} />
-              <Metric label="Con resumen" value={topicStats.summarized} />
-              <Metric label="Estudiados" value={topicStats.studied} />
-              <Metric label="Repasos" value={topicStats.reviews} />
-              <Metric label="Simulacros" value={topicStats.simulations} />
-              <Metric label="Prioridad alta" value={topicStats.highPriority} />
-              <Metric label="Dominio alto" value={topicStats.highMastery} />
-            </dl>
-          )}
-        </Card>
-
-        <Card>
-          <h2 className="text-lg font-semibold text-slate-950">Prácticos</h2>
-          {practicalStats.total === 0 ? (
-            <p className="mt-4 text-sm leading-6 text-slate-600">
-              Sin prácticos creados.
-            </p>
-          ) : (
-            <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-              <Metric label="Total" value={practicalStats.total} />
-              <Metric label="No empezados" value={practicalStats.notStarted} />
-              <Metric label="Trabajados" value={practicalStats.worked} />
-              <Metric label="Dominados" value={practicalStats.mastered} />
-              <Metric label="Intentos totales" value={practicalStats.attempts} />
-            </dl>
-          )}
-        </Card>
-
-        <Card>
-          <h2 className="text-lg font-semibold text-slate-950">Calendario</h2>
-          {taskStats.total === 0 ? (
-            <p className="mt-4 text-sm leading-6 text-slate-600">
-              Sin tareas de calendario.
-            </p>
-          ) : (
-            <div className="mt-5 space-y-5">
-              <dl className="grid gap-4 sm:grid-cols-2">
-                <Metric label="Total" value={taskStats.total} />
-                <Metric label="Pendientes" value={taskStats.pending} />
-                <Metric label="Completadas" value={taskStats.completed} />
-                <Metric label="Canceladas" value={taskStats.cancelled} />
-                <Metric label="Tipo tema" value={taskStats.studyTopic} />
-                <Metric label="Tipo práctico" value={taskStats.practical} />
-                <Metric label="Descanso" value={taskStats.rest} />
-              </dl>
-              <div className="rounded-lg bg-slate-50 p-4">
-                <p className="text-sm font-medium text-slate-500">Próxima tarea pendiente</p>
-                <p className="mt-1 text-sm font-semibold text-slate-950">
-                  {nextPendingTask
-                    ? `${formatDate(nextPendingTask.task_date)} · ${nextPendingTask.title}`
-                    : "No hay tareas pendientes próximas."}
-                </p>
-              </div>
-            </div>
-          )}
-        </Card>
-      </div>
-
-      <Card>
-        <h2 className="text-lg font-semibold text-slate-950">
-          Recomendaciones básicas
-        </h2>
-        <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
-          {recommendations.map((recommendation) => (
-            <p key={recommendation}>{recommendation}</p>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div>
-      <dt className="text-sm font-medium text-slate-500">{label}</dt>
-      <dd className="mt-1 text-xl font-semibold text-slate-950">{value}</dd>
-    </div>
+    <ProgressView
+      generalPercent={generalProgressPercent}
+      loadError={loadError}
+      nextTaskLabel={
+        nextPendingTask ? formatDate(nextPendingTask.task_date) : null
+      }
+      practicals={practicalStats}
+      recommendations={recommendations}
+      tasks={taskStats}
+      topics={topicStats}
+    />
   );
 }

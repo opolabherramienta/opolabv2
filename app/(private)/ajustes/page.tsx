@@ -1,4 +1,5 @@
-﻿import { OnboardingForm } from "@/components/onboarding/OnboardingForm";
+﻿import { LogoutButton } from "@/components/auth/LogoutButton";
+import { OnboardingForm } from "@/components/onboarding/OnboardingForm";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -73,10 +74,11 @@ export default async function AjustesPage({
         <p className="mt-1 text-sm leading-6 text-slate-600">
           Has iniciado sesión como {user.email}.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-3">
           <Button href="/reset-password" variant="secondary">
             Cambiar contraseña
           </Button>
+          <LogoutButton />
         </div>
       </Card>
     </div>

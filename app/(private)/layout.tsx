@@ -1,14 +1,13 @@
 ﻿import { LogoutButton } from "@/components/auth/LogoutButton";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar, type SidebarItem } from "@/components/layout/Sidebar";
 
-const privateItems = [
-  { href: "/dashboard", label: "Inicio" },
-  { href: "/temas", label: "Temas" },
-  { href: "/practicos", label: "Prácticos" },
-  { href: "/calendario", label: "Calendario" },
-  { href: "/progreso", label: "Progreso" },
-  { href: "/sugerencias", label: "Sugerencias" },
-  { href: "/ajustes", label: "Ajustes" },
+const privateItems: SidebarItem[] = [
+  { href: "/dashboard", label: "Inicio", icon: "home" },
+  { href: "/temas", label: "Temas", icon: "balls" },
+  { href: "/practicos", label: "Prácticos", icon: "flask" },
+  { href: "/calendario", label: "Calendario", icon: "calendar", shortLabel: "Agenda" },
+  { href: "/progreso", label: "Progreso", icon: "chart" },
+  { href: "/ajustes", label: "Ajustes", icon: "settings" },
 ];
 
 export default function PrivateLayout({
@@ -17,13 +16,15 @@ export default function PrivateLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
+    <div className="min-h-screen lg:flex">
       <Sidebar
         footerAction={<LogoutButton />}
         items={privateItems}
-        productName="Opolab Planner"
+        productName="Opolab"
       />
-      <main className="flex-1 min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">{children}</main>
+      <main className="min-w-0 flex-1 px-4 pt-6 pb-28 sm:px-6 lg:px-10 lg:py-10">
+        <div className="mx-auto w-full max-w-5xl">{children}</div>
+      </main>
     </div>
   );
 }

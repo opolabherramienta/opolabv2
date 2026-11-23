@@ -86,8 +86,8 @@ export default async function PracticosPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        description="Registra tus supuestos prácticos, intentos, puntuaciones y progreso."
-        title="Mis prácticos"
+        description="Apunta cada supuesto práctico, suma un intento cada vez que lo trabajes y marca los que ya dominas."
+        title="Prácticos"
       />
 
       {loadError ? (

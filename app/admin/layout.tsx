@@ -1,9 +1,9 @@
-﻿import { LogoutButton } from "@/components/auth/LogoutButton";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { requireAdmin } from "@/lib/auth/authorization";
 
 const adminItems = [
-  { href: "/admin", label: "Dashboard admin" },
+  { href: "/admin", label: "Panel", icon: "shield" as const },
   { href: "/admin/especialidades", label: "Especialidades" },
   { href: "/admin/temas", label: "Temas" },
   { href: "/admin/sugerencias", label: "Sugerencias" },
@@ -17,13 +17,13 @@ export default async function AdminLayout({
 }>) {
   await requireAdmin();
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
+    <div className="min-h-screen lg:flex">
       <Sidebar
         footerAction={<LogoutButton />}
         items={adminItems}
         productName="Opolab Admin"
       />
-      <main className="flex-1 min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">{children}</main>
+      <main className="min-w-0 flex-1 px-4 pt-6 pb-28 sm:px-6 lg:px-10 lg:py-10">{children}</main>
     </div>
   );
 }

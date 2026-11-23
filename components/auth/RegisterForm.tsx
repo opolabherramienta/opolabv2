@@ -16,7 +16,7 @@ export function RegisterForm() {
   );
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
+    <form action={formAction} className="mt-6 grid grid-cols-1 gap-4">
       <Input
         id="full_name"
         label="Nombre completo"
@@ -42,16 +42,16 @@ export function RegisterForm() {
         type="password"
       />
       {state.error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
           {state.error}
         </p>
       ) : null}
       {state.message ? (
-        <p role="status" className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
+        <p role="status" className="rounded-xl bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-800">
           {state.message}
         </p>
       ) : null}
-      <Button className="mt-2 w-full" disabled={pending} type="submit">
+      <Button className="mt-2 w-full" size="lg" disabled={pending} type="submit">
         {pending ? "Creando cuenta..." : "Crear cuenta"}
       </Button>
     </form>

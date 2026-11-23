@@ -66,7 +66,7 @@ function SelectField({
   name: string;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-medium text-slate-700" htmlFor={id}>
+    <label className="grid grid-cols-1 gap-2 text-sm font-medium text-slate-700" htmlFor={id}>
       {label}
       <select
         className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
@@ -96,8 +96,8 @@ export function OnboardingForm({
   const selectedDays = new Set(profile?.available_days ?? []);
 
   return (
-    <form action={formAction} className="grid gap-6">
-      <div className="grid gap-4 md:grid-cols-3">
+    <form action={formAction} className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <SelectField
           defaultValue={profile?.education_stage_id ?? ""}
           id="education_stage_id"
@@ -138,7 +138,7 @@ export function OnboardingForm({
         </SelectField>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Input
           defaultValue={profile?.opposition_date ?? ""}
           id="opposition_date"
@@ -170,11 +170,11 @@ export function OnboardingForm({
         </SelectField>
       </div>
 
-      <fieldset className="grid gap-3">
+      <fieldset className="grid grid-cols-1 gap-3">
         <legend className="text-sm font-medium text-slate-700">
           Días disponibles
         </legend>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {dayOptions.map((day) => (
             <label
               className="flex h-11 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700"
@@ -193,7 +193,7 @@ export function OnboardingForm({
         </div>
       </fieldset>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Input
           defaultValue={profile?.default_topic_duration_minutes ?? 60}
           id="default_topic_duration_minutes"

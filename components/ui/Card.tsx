@@ -5,12 +5,7 @@ type CardProps = ComponentPropsWithoutRef<"section">;
 export function Card({ className = "", ...props }: CardProps) {
   return (
     <section
-      className={[
-        "rounded-lg border border-slate-200 bg-white p-6 shadow-sm",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className={["edge p-5 sm:p-6", className].filter(Boolean).join(" ")}
       {...props}
     />
   );

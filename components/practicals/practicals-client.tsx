@@ -1,8 +1,11 @@
 ﻿"use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { type CSSProperties, type FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
+import { ConfettiBurst, useConfetti } from "@/components/ui/Confetti";
+import { Icon } from "@/components/ui/Icon";
+import { fieldClasses } from "@/components/ui/Input";
+import { ProgressBar } from "@/components/ui/Progress";
 import { StatCard } from "@/components/ui/StatCard";
 import { createClient } from "@/lib/supabase/client";
 
@@ -43,8 +46,8 @@ const defaultPracticalStatus: PracticalStatus = "not_started";
 
 const statusOptions: Array<{ value: PracticalStatus; label: string }> = [
   { value: "not_started", label: "Sin empezar" },
-  { value: "worked", label: "En preparación" },
-  { value: "mastered", label: "Resuelto" },
+  { value: "worked", label: "Trabajado" },
+  { value: "mastered", label: "Dominado" },
 ];
 
 function normalizePracticalStatus(
@@ -109,6 +112,7 @@ export function PracticalsClient({
   const [practicals, setPracticals] = useState(initialPracticals);
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const [creating, setCreating] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const [error, setError] = useState("");
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -176,7 +180,7 @@ export function PracticalsClient({
       }
 
       if (!insertResult.data) {
-        throw new Error("Supabase no devolvio el práctico creado.");
+        throw new Error("Supabase no devolvió el práctico creado.");
       }
 
       setPracticals((current) => [
@@ -185,6 +189,7 @@ export function PracticalsClient({
       ]);
       setNewName("");
       setNewDescription("");
+      setFormOpen(false);
     } catch (saveError) {
       console.error("Error guardando práctico:", saveError);
       console.error("Payload enviado:", payload);
@@ -234,7 +239,7 @@ export function PracticalsClient({
       }
 
       if (!updateResult.data) {
-        throw new Error("Supabase no devolvio el práctico actualizado.");
+        throw new Error("Supabase no devolvió el práctico actualizado.");
       }
 
       setPracticals((current) =>
@@ -263,202 +268,364 @@ export function PracticalsClient({
     }
   }
 
+
+  const masteredPercent =
+    stats.available > 0 ? (stats.mastered / stats.available) * 100 : 0;
+
+  function patchLocal(practicalId: string, patch: Partial<PracticalItem>) {
+    setPracticals((current) =>
+      current.map((practical) =>
+        practical.id === practicalId ? { ...practical, ...patch } : practical,
+      ),
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <StatCard label="Prácticos disponibles" value={String(stats.available)} />
-        <StatCard label="Prácticos trabajados" value={String(stats.worked)} />
-        <StatCard
-          label="Prácticos resueltos"
-          tone="green"
-          value={String(stats.mastered)}
-        />
-        <StatCard label="Intentos totales" value={String(stats.attempts)} />
-        <StatCard
-          label="Sin empezar"
-          tone="orange"
-          value={String(stats.notStarted)}
-        />
-      </div>
+      {practicals.length > 0 ? (
+        <section className="edge p-5 sm:p-6">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+            <div>
+              <p className="font-display text-4xl leading-none font-extrabold text-slate-950 tabular-nums">
+                {stats.mastered}
+                <span className="text-2xl text-slate-400">
+                  {" "}
+                  de {stats.available}
+                </span>
+              </p>
+              <p className="mt-1.5 text-sm font-semibold text-slate-600">
+                {stats.mastered === stats.available
+                  ? "Todos tus prácticos están dominados"
+                  : "prácticos dominados"}
+              </p>
+            </div>
+            <Button onClick={() => setFormOpen((open) => !open)} size="lg">
+              <Icon name="plus" />
+              Añadir práctico
+            </Button>
+          </div>
+          <ProgressBar className="mt-5" tone="aprobado" value={masteredPercent} />
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <StatCard
+              icon={<Icon name="flask" />}
+              label="Trabajados"
+              value={String(stats.worked)}
+            />
+            <StatCard
+              icon={<Icon name="repeat" />}
+              label="Intentos en total"
+              tone="green"
+              value={String(stats.attempts)}
+            />
+            <StatCard
+              icon={<Icon name="clock" />}
+              label="Sin empezar"
+              tone="orange"
+              value={String(stats.notStarted)}
+            />
+          </div>
+        </section>
+      ) : null}
 
       {error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p
+          className="rounded-xl border-2 border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
 
-      <Card>
-        <form
-          className="grid gap-4 lg:grid-cols-[1fr_1.5fr_auto]"
-          onSubmit={createPractical}
-        >
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Nombre
-            <input
-              className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
-              disabled={creating}
-              onChange={(event) => setNewName(event.target.value)}
-              placeholder="Supuesto práctico 1"
-              value={newName}
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Descripción
-            <input
-              className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
-              disabled={creating}
-              onChange={(event) => setNewDescription(event.target.value)}
-              placeholder="Contexto, fuente o notas iniciales"
-              value={newDescription}
-            />
-          </label>
-          <div className="flex items-end">
-            <Button className="w-full" disabled={creating} type="submit">
-              {creating ? "Creando..." : "Crear práctico"}
-            </Button>
-          </div>
-        </form>
-      </Card>
+      {formOpen || practicals.length === 0 ? (
+        <section className="edge animate-rise border-violet-200 p-5 sm:p-6">
+          {practicals.length === 0 ? (
+            <div className="mb-5 flex items-start gap-4">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <Icon name="flask" size={30} />
+              </span>
+              <div>
+                <h2 className="text-xl font-extrabold text-slate-950">
+                  Apunta tu primer práctico
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Un problema de genética, un corte geológico, una clave
+                  dicotómica… Cada vez que lo trabajes, suma un intento y verás
+                  cuáles tienes ya dominados.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <h2 className="mb-4 text-lg font-extrabold text-slate-950">
+              Nuevo práctico
+            </h2>
+          )}
+          <form className="grid grid-cols-1 gap-4" onSubmit={createPractical}>
+            <label className="grid grid-cols-1 gap-2 text-sm font-semibold text-slate-700">
+              Nombre
+              <input
+                autoFocus={practicals.length > 0}
+                className={fieldClasses}
+                disabled={creating}
+                onChange={(event) => setNewName(event.target.value)}
+                placeholder="Problema de genética: herencia ligada al sexo"
+                value={newName}
+              />
+            </label>
+            <label className="grid grid-cols-1 gap-2 text-sm font-semibold text-slate-700">
+              Notas (opcional)
+              <input
+                className={fieldClasses}
+                disabled={creating}
+                onChange={(event) => setNewDescription(event.target.value)}
+                placeholder="De dónde lo has sacado, qué te cuesta…"
+                value={newDescription}
+              />
+            </label>
+            <div className="flex flex-wrap gap-3">
+              <Button disabled={creating} type="submit">
+                {creating ? "Guardando…" : "Guardar práctico"}
+              </Button>
+              {practicals.length > 0 ? (
+                <Button
+                  disabled={creating}
+                  onClick={() => setFormOpen(false)}
+                  variant="ghost"
+                >
+                  Cancelar
+                </Button>
+              ) : null}
+            </div>
+          </form>
+        </section>
+      ) : null}
 
-      {practicals.length === 0 ? (
-        <Card>
-          <p className="text-sm leading-6 text-slate-600">
-            Todavía no tienes prácticos registrados.
-          </p>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {practicals.map((practical) => {
-            const isSaving = savingIds.has(practical.id);
-
-            return (
-              <Card className="space-y-5" key={practical.id}>
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="space-y-2">
-                    <input
-                      className="w-full rounded-lg border border-transparent bg-transparent px-0 text-lg font-semibold text-slate-950 outline-none transition-colors focus:border-violet-200 focus:bg-white focus:px-3 focus:py-2 focus:ring-2 focus:ring-violet-100"
-                      disabled={isSaving}
-                      onBlur={(event) =>
-                        updatePractical(practical.id, {
-                          name: event.target.value,
-                        })
-                      }
-                      onChange={(event) =>
-                        setPracticals((current) =>
-                          current.map((currentPractical) =>
-                            currentPractical.id === practical.id
-                              ? {
-                                  ...currentPractical,
-                                  name: event.target.value,
-                                }
-                              : currentPractical,
-                          ),
-                        )
-                      }
-                      value={practical.name}
-                    />
-                    <p className="text-sm font-medium text-slate-500">
-                      Estado: {getStatusLabel(practical.status)}
-                    </p>
-                  </div>
-                  <p className="text-sm font-medium text-slate-500">
-                    {isSaving ? "Guardando..." : "Guardado"}
-                  </p>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-3">
-                  <Button
-                    disabled={isSaving}
-                    onClick={() =>
-                      updatePractical(practical.id, {
-                        status: "worked",
-                      })
-                    }
-                    variant="secondary"
-                  >
-                    En preparación
-                  </Button>
-                  <Button
-                    disabled={isSaving}
-                    onClick={() =>
-                      updatePractical(practical.id, {
-                        status: "mastered",
-                      })
-                    }
-                    variant="secondary"
-                  >
-                    Marcar resuelto
-                  </Button>
-                  <Button
-                    disabled={isSaving}
-                    onClick={() =>
-                      updatePractical(practical.id, {
-                        status:
-                          practical.status === "not_started"
-                            ? "worked"
-                            : practical.status,
-                        timesWorked: practical.timesWorked + 1,
-                      })
-                    }
-                    variant="secondary"
-                  >
-                    +1 intento ({practical.timesWorked})
-                  </Button>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
-                  <label className="grid gap-2 text-sm font-medium text-slate-700">
-                    Estado
-                    <select
-                      className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
-                      disabled={isSaving}
-                      onChange={(event) =>
-                        updatePractical(practical.id, {
-                          status: normalizePracticalStatus(event.target.value),
-                        })
-                      }
-                      value={practical.status}
-                    >
-                      {statusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="grid gap-2 text-sm font-medium text-slate-700">
-                    Descripción
-                    <textarea
-                      className="min-h-28 rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
-                      disabled={isSaving}
-                      onBlur={(event) =>
-                        updatePractical(practical.id, {
-                          description: event.target.value,
-                        })
-                      }
-                      onChange={(event) =>
-                        setPracticals((current) =>
-                          current.map((currentPractical) =>
-                            currentPractical.id === practical.id
-                              ? {
-                                  ...currentPractical,
-                                  description: event.target.value,
-                                }
-                              : currentPractical,
-                          ),
-                        )
-                      }
-                      placeholder="Añade contexto o notas para este práctico."
-                      value={practical.description}
-                    />
-                  </label>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+      {practicals.length > 0 ? (
+        <ul className="grid grid-cols-1 gap-4">
+          {practicals.map((practical) => (
+            <li key={practical.id}>
+              <PracticalCard
+                isSaving={savingIds.has(practical.id)}
+                onLocalChange={(patch) => patchLocal(practical.id, patch)}
+                onUpdate={(patch) => updatePractical(practical.id, patch)}
+                practical={practical}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
+  );
+}
+
+type PracticalCardProps = {
+  isSaving: boolean;
+  onLocalChange: (patch: Partial<PracticalItem>) => void;
+  onUpdate: (patch: Partial<PracticalItem>) => void;
+  practical: PracticalItem;
+};
+
+const stepStyles: Record<PracticalStatus, { active: string; edge: string }> = {
+  not_started: {
+    active: "border-slate-300 bg-slate-100 text-slate-800",
+    edge: "var(--color-slate-300)",
+  },
+  worked: {
+    active: "border-subrayador-edge bg-subrayador text-slate-900",
+    edge: "var(--color-subrayador-edge)",
+  },
+  mastered: {
+    active: "border-aprobado-edge bg-aprobado text-white",
+    edge: "var(--color-aprobado-edge)",
+  },
+};
+
+function PracticalCard({
+  isSaving,
+  onLocalChange,
+  onUpdate,
+  practical,
+}: PracticalCardProps) {
+  const { burst, fire } = useConfetti();
+  const [notesOpen, setNotesOpen] = useState(false);
+  const notesId = `practical-notes-${practical.id}`;
+  const currentStep = statusOptions.findIndex(
+    (option) => option.value === practical.status,
+  );
+  const isMastered = practical.status === "mastered";
+
+  function chooseStatus(status: PracticalStatus) {
+    if (status === practical.status) {
+      return;
+    }
+
+    if (status === "mastered") {
+      fire();
+    }
+
+    onUpdate({ status });
+  }
+
+  return (
+    <article
+      className={[
+        "edge relative p-4 transition-colors sm:p-5",
+        isMastered ? "border-emerald-300 bg-emerald-50/40" : "",
+      ].join(" ")}
+    >
+      <ConfettiBurst burst={burst} />
+
+      <div className="flex items-start gap-3">
+        <span
+          className={[
+            "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+            isMastered
+              ? "bg-aprobado text-white"
+              : practical.status === "worked"
+                ? "bg-yellow-100 text-yellow-900"
+                : "bg-slate-100 text-slate-500",
+          ].join(" ")}
+        >
+          <Icon name={isMastered ? "check" : "flask"} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <input
+            aria-label="Nombre del práctico"
+            className="w-full min-w-0 rounded-lg border-transparent bg-transparent py-1.5 font-display text-lg leading-snug font-extrabold text-slate-950 outline-none transition-[padding,background-color,border-color] hover:border-slate-200 focus:border-violet-500 focus:bg-white focus:px-2.5 focus:ring-4 focus:ring-violet-100"
+            disabled={isSaving}
+            onBlur={(event) => onUpdate({ name: event.target.value })}
+            onChange={(event) => onLocalChange({ name: event.target.value })}
+            value={practical.name}
+          />
+          <p
+            aria-live="polite"
+            className="text-xs font-semibold text-slate-400"
+          >
+            {isSaving ? "Guardando…" : getStatusLabel(practical.status)}
+          </p>
+        </div>
+      </div>
+
+      <div
+        aria-label="Estado del práctico"
+        className="mt-4 grid grid-cols-3 gap-2"
+        role="group"
+      >
+        {statusOptions.map((option, index) => {
+          const isCurrent = option.value === practical.status;
+          const isPassed = index < currentStep;
+
+          return (
+            <button
+              aria-pressed={isCurrent}
+              className={[
+                "press flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-1 py-1.5 text-center text-xs leading-tight font-bold sm:flex-row sm:gap-2 sm:text-sm",
+                isCurrent
+                  ? stepStyles[option.value].active
+                  : isPassed
+                    ? "border-slate-200 bg-white text-slate-700"
+                    : "border-slate-200 bg-white text-slate-400",
+              ].join(" ")}
+              disabled={isSaving}
+              key={option.value}
+              onClick={() => chooseStatus(option.value)}
+              style={
+                {
+                  "--press-edge": isCurrent
+                    ? stepStyles[option.value].edge
+                    : "var(--color-slate-200)",
+                } as CSSProperties
+              }
+              type="button"
+            >
+              <span
+                className={[
+                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] tabular-nums",
+                  isCurrent
+                    ? "bg-white/70 text-slate-900"
+                    : isPassed
+                      ? "bg-slate-200 text-slate-700"
+                      : "bg-slate-100 text-slate-400",
+                ].join(" ")}
+              >
+                {isPassed ? <Icon name="check" size={12} /> : index + 1}
+              </span>
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl bg-slate-50 p-3 sm:p-4">
+        <div className="flex items-baseline gap-2">
+          <span
+            className="inline-block animate-pop font-display text-4xl leading-none font-extrabold text-violet-700 tabular-nums"
+            key={practical.timesWorked}
+          >
+            {practical.timesWorked}
+          </span>
+          <span className="text-sm font-semibold text-slate-600">
+            {practical.timesWorked === 1 ? "intento" : "intentos"}
+          </span>
+        </div>
+        <Button
+          disabled={isSaving}
+          onClick={() =>
+            onUpdate({
+              status:
+                practical.status === "not_started"
+                  ? "worked"
+                  : practical.status,
+              timesWorked: practical.timesWorked + 1,
+            })
+          }
+        >
+          <Icon name="plus" size={18} />
+          1 intento
+        </Button>
+      </div>
+
+      <div className="mt-2">
+        <button
+          aria-controls={notesId}
+          aria-expanded={notesOpen}
+          className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-1 text-left text-sm font-bold text-slate-600 transition-colors hover:text-slate-900"
+          onClick={() => setNotesOpen((open) => !open)}
+          type="button"
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <Icon className="shrink-0" name="note" size={18} />
+            <span className="truncate">
+              {notesOpen
+                ? "Notas"
+                : practical.description.trim()
+                  ? practical.description
+                  : "Añadir notas"}
+            </span>
+          </span>
+          <Icon
+            className={[
+              "shrink-0 transition-transform",
+              notesOpen ? "rotate-180" : "",
+            ].join(" ")}
+            name="chevron-down"
+            size={18}
+          />
+        </button>
+        {notesOpen ? (
+          <textarea
+            aria-label="Notas del práctico"
+            className="mt-1 min-h-28 w-full animate-rise rounded-xl border-slate-200 bg-white px-3.5 py-3 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+            disabled={isSaving}
+            id={notesId}
+            onBlur={(event) => onUpdate({ description: event.target.value })}
+            onChange={(event) =>
+              onLocalChange({ description: event.target.value })
+            }
+            placeholder="Qué te ha costado, de dónde lo has sacado, qué repasar…"
+            value={practical.description}
+          />
+        ) : null}
+      </div>
+    </article>
   );
 }

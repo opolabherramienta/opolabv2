@@ -10,7 +10,7 @@ export default async function AdminPage() {
         description="Aquí se mostrará el resumen de administración de Opolab Planner."
         title="Dashboard admin"
       />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <StatCard label="Especialidades" value="0" />
         <StatCard label="Temas cargados" tone="green" value="0" />
         <StatCard label="Avisos pendientes" tone="orange" value="0" />
