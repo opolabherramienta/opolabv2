@@ -1,0 +1,94 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--boli);
+      overflow: hidden;
+    }
+    #s1-deco1 { left: -160px; top: -200px; width: 620px; height: 620px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); }
+    #s1-deco2 { left: 520px; top: 800px; width: 520px; height: 520px; border-radius: 50%; background: rgba(16, 185, 129, 0.4); }
+    #s1-deco3 { left: 700px; top: 96px; width: 84px; height: 84px; border-radius: 50%; background: var(--subrayador); }
+    #s1-num { left: 110px; top: 190px; font-size: 440px; line-height: 0.9; color: #fff; }
+    #s1-word { left: 124px; top: 590px; font-size: 150px; line-height: 1; color: #fff; }
+    #s1-sub { left: 130px; top: 770px; font-size: 44px; color: #ede9fe; }
+    #s1-card { left: 900px; top: 134px; width: 900px; height: 812px; background: #fff; border-radius: 44px; box-shadow: 0 14px 0 var(--boli-edge); }
+    #s1-cardtitle { left: 40px; top: 34px; font-size: 46px; color: var(--tinta); }
+    #s1-cardnote { right: 40px; top: 46px; font-size: 28px; color: var(--s500); }
+    #s1-grid { left: 36px; top: 116px; width: 828px; display: grid; grid-template-columns: repeat(10, 72px); gap: 12px; }
+    #s1-grid .ball { width: 72px; height: 72px; font-size: 26px; }
+    #s1-b47 { left: 1266px; top: 412px; width: 420px; height: 420px; font-size: 420px; z-index: 5; }
+    #s1-b47 span { font-size: 150px; }
+    #s1-q { left: 110px; top: 800px; width: 900px; font-size: 104px; line-height: 1; color: #fff; z-index: 6; }
+    #s1-tag { left: 116px; top: 930px; font-size: 40px; color: #ede9fe; z-index: 6; }
+  </style>
+  <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
+    <div id="s1-deco1" class="abs"></div>
+    <div id="s1-deco2" class="abs"></div>
+    <div id="s1-deco3" class="abs"></div>
+    <div id="s1-left" class="full">
+      <div id="s1-num" class="abs disp">75</div>
+      <div id="s1-word" class="abs disp">temas</div>
+      <div id="s1-sub" class="abs txt">Biología y Geología · Secundaria</div>
+    </div>
+    <div id="s1-card" class="abs">
+      <div id="s1-cardtitle" class="abs disp">El bombo</div>
+      <div id="s1-cardnote" class="abs txt">75 temas, 75 bolas</div>
+      <div id="s1-grid" class="abs"></div>
+    </div>
+    <div id="s1-b47" class="abs ball b-off"><span id="s1-b47n">47</span></div>
+    <div id="s1-q" class="abs disp">¿Y si sale esta?</div>
+    <div id="s1-tag" class="abs txt">Tema 47 · Sin elegir</div>
+  </div>
+  <script>
+    (function () {
+      const grid = document.querySelector("#s1-grid");
+      let html = "";
+      for (let n = 1; n <= 75; n++) {
+        html += '<div class="ball b-off s1-b" data-layout-ignore id="s1-b' + n + '"' + (n === 47 ? ' style="visibility:hidden"' : "") + ">" + n + "</div>";
+      }
+      grid.innerHTML = html;
+      const rnd = (i, k) => {
+        const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+        return x - Math.floor(x);
+      };
+      const tl = gsap.timeline({ paused: true });
+      const balls = gsap.utils.toArray(".s1-b");
+
+      // 0: the drum fills in a wave; frame 0 already shows the whole picture.
+      tl.fromTo(balls, { scale: 0.8, opacity: 0.9 }, { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(2)", stagger: { each: 0.012, from: "start" } }, 0);
+      tl.fromTo("#s1-b47", { scale: 0.1714, x: 0, y: 0 }, { scale: 0.1714, duration: 0.01 }, 0);
+      tl.fromTo("#s1-num", { scale: 1.18, transformOrigin: "20% 60%" }, { scale: 1, duration: 0.7, ease: "expo.out" }, 0.55);
+      tl.fromTo("#s1-word", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 1.25);
+      tl.fromTo("#s1-sub", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.6);
+      tl.fromTo("#s1-q", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo("#s1-tag", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+
+      // 2.76 "y el día del examen": the drum spins, the balls tumble.
+      balls.forEach((b, i) => {
+        const a1 = { x: (rnd(i, 1) - 0.5) * 520, y: (rnd(i, 2) - 0.5) * 420, rotation: (rnd(i, 3) - 0.5) * 300 };
+        const a2 = { x: (rnd(i, 4) - 0.5) * 560, y: (rnd(i, 5) - 0.5) * 440, rotation: (rnd(i, 6) - 0.5) * 500 };
+        tl.to(b, { ...a1, duration: 0.55, ease: "power2.inOut" }, 2.7);
+        tl.to(b, { ...a2, duration: 0.6, ease: "sine.inOut" }, 3.25);
+        tl.to(b, { x: 0, y: 0, rotation: 0, duration: 0.7, ease: "back.out(1.2)" }, 3.9 + rnd(i, 7) * 0.15);
+      });
+      tl.to("#s1-card", { rotation: -2.2, duration: 0.3, ease: "power2.inOut" }, 2.7);
+      tl.to("#s1-card", { rotation: 2, duration: 0.5, ease: "sine.inOut" }, 3.0);
+      tl.to("#s1-card", { rotation: 0, duration: 0.5, ease: "back.out(2)" }, 3.5);
+
+      // 4.08 "el bombo decide": ball 47 jumps out and takes the frame.
+      tl.to("#s1-left", { opacity: 0, filter: "blur(14px)", duration: 0.25, ease: "power2.in" }, 4.0);
+      tl.to("#s1-b47", { x: -836, y: -160, scale: 1, rotation: 360, duration: 0.75, ease: "expo.out" }, 4.1);
+      tl.to("#s1-card", { opacity: 0.55, scale: 0.94, x: 60, duration: 0.6, ease: "power2.out" }, 4.15);
+      tl.to("#s1-q", { opacity: 1, duration: 0.01 }, 4.9);
+      tl.fromTo("#s1-q", { filter: "blur(12px)", x: -30 }, { filter: "blur(0px)", x: 0, duration: 0.25, ease: "power4.out" }, 4.9);
+      tl.to("#s1-tag", { opacity: 1, duration: 0.2, ease: "power2.out" }, 5.05);
+
+      // 6.3: the ball becomes the next world (squared paper).
+      tl.to(["#s1-q", "#s1-tag", "#s1-card"], { opacity: 0, duration: 0.2, ease: "power2.in" }, 6.25);
+      tl.to("#s1-b47n", { opacity: 0, duration: 0.15 }, 6.3);
+      tl.to("#s1-b47", { scale: 9, backgroundColor: "#f4efff", boxShadow: "inset 0 0em 0 #f4efff", duration: 0.62, ease: "power3.in" }, 6.33);
+      window.__timelines["s1"] = tl;
+    })();
+  </script>
+</template>

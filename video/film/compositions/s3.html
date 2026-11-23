@@ -1,0 +1,46 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--papel); overflow: hidden; }
+    #s3-shots { transform-origin: 0 0; }
+    #s3-shots img { position: absolute; left: 0; top: 0; width: 1920px; height: 1400px; }
+    #s3-panel { background: var(--boli); transform-origin: 0 50%; }
+    #s3-logo { left: 580px; top: 391px; width: 760px; height: 297px; transform-origin: 0 0; }
+    #s3-iris { background: var(--papel); z-index: 9; }
+  </style>
+  <div id="root" data-composition-id="s3" data-width="1920" data-height="1080">
+    <div id="s3-shots" class="full" data-layout-allow-overflow>
+      <img id="s3-i1" src="assets/img/inicio.png" alt="" />
+      <img id="s3-i2" src="assets/img/hoy.png" alt="" />
+      <img id="s3-i3" src="assets/img/calendario.png" alt="" />
+      <img id="s3-i4" src="assets/img/practicos.png" alt="" />
+      <img id="s3-i5" src="assets/img/progreso.png" alt="" />
+      <img id="s3-i6" src="assets/img/temas.png" alt="" />
+    </div>
+    <div id="s3-panel" class="full"></div>
+    <img id="s3-logo" class="abs" src="assets/img/logo-opolab-blanco.png" alt="" />
+    <div id="s3-iris" class="full"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#s3-iris", { clipPath: "circle(0px at 128px 229px)" }, { clipPath: "circle(0px at 128px 229px)", duration: 0.01 }, 0);
+      tl.fromTo(["#s3-i2", "#s3-i3", "#s3-i4", "#s3-i5", "#s3-i6"], { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      // "OpoLab": the mark wipes in on the violet that flooded the mess.
+      tl.fromTo("#s3-logo", { clipPath: "inset(0% 100% 0% 0%)", x: -40, y: 0, scale: 1, opacity: 1 }, { clipPath: "inset(0% 0% 0% 0%)", x: 0, duration: 0.5, ease: "power3.out" }, 0.3);
+      // The violet folds into the sidebar of the app and the mark goes home.
+      tl.fromTo("#s3-panel", { scaleX: 1 }, { scaleX: 256 / 1920, duration: 0.7, ease: "expo.inOut" }, 1.2);
+      tl.to("#s3-logo", { x: -556, y: -366, scale: 0.129, duration: 0.7, ease: "expo.inOut" }, 1.2);
+      tl.fromTo("#s3-shots", { scale: 1.08, x: -40, y: -20 }, { scale: 1, x: 0, y: 0, duration: 0.8, ease: "expo.out" }, 1.35);
+      tl.to(["#s3-panel", "#s3-logo"], { opacity: 0, duration: 0.14, ease: "power1.out" }, 1.92);
+      // "todo en un solo sitio": every real screen, one after another.
+      ["#s3-i2", "#s3-i3", "#s3-i4", "#s3-i5", "#s3-i6"].forEach((sel, i) => {
+        const t = 2.2 + i * 0.3;
+        tl.to(sel, { opacity: 1, duration: 0.01 }, t);
+        tl.fromTo("#s3-shots", { scale: 1.018 }, { scale: 1, duration: 0.26, ease: "power3.out" }, t);
+      });
+      // Through the "Temas" button into the next world.
+      tl.to("#s3-iris", { clipPath: "circle(2100px at 128px 229px)", duration: 0.46, ease: "power3.in" }, 3.72);
+      window.__timelines["s3"] = tl;
+    })();
+  </script>
+</template>

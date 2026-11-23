@@ -1,0 +1,96 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--papel);
+      overflow: hidden;
+    }
+    #s2-grid {
+      background-image: linear-gradient(var(--s200) 2px, transparent 2px), linear-gradient(90deg, var(--s200) 2px, transparent 2px);
+      background-size: 54px 54px;
+    }
+    #s2-h { left: 110px; top: 70px; font-size: 150px; line-height: 1; color: var(--tinta); white-space: nowrap; }
+    #s2-h span { display: inline-block; }
+    #s2-xls { left: 90px; top: 330px; width: 820px; height: 520px; background: #fff; border-radius: 14px; box-shadow: 0 18px 40px rgba(30, 26, 56, 0.22); overflow: hidden; }
+    #s2-xls .bar { height: 70px; background: #1f8a4c; color: #fff; font-size: 30px; padding: 16px 24px; }
+    #s2-xls table { width: 100%; border-collapse: collapse; }
+    #s2-xls td { border: 2px solid #d9dee3; height: 62px; padding: 0 16px; font-size: 28px; color: #333a45; font-family: var(--body); font-weight: 600; }
+    #s2-xls td.h { background: #eef1f4; color: #7b8491; width: 64px; text-align: center; }
+    #s2-xls td.r { color: #c22f27; }
+    #s2-xls td.y { background: #fff3c4; }
+    #s2-agenda { left: 800px; top: 300px; width: 560px; height: 640px; background: #fffdf5; border-radius: 18px; box-shadow: 0 18px 40px rgba(30, 26, 56, 0.25); }
+    #s2-agenda .rings { position: absolute; left: 0; right: 0; top: -22px; height: 50px; display: flex; justify-content: space-around; padding: 0 50px; }
+    #s2-agenda .rings i { width: 22px; height: 50px; border-radius: 11px; background: #514a72; }
+    #s2-agenda .top { height: 96px; background: var(--rojo); border-radius: 18px 18px 0 0; color: #fff; font-size: 40px; padding: 34px 34px 0; }
+    #s2-agenda .ln { height: 86px; border-bottom: 2px solid #d8d2c0; margin: 0 34px; font-size: 34px; color: var(--tinta); display: flex; align-items: center; gap: 18px; }
+    #s2-agenda .ln b { color: var(--s400); width: 44px; }
+    #s2-agenda .ln s { color: var(--s400); }
+    .s2-post { width: 230px; height: 230px; padding: 26px 22px; font-size: 36px; line-height: 1.08; color: var(--tinta); box-shadow: 0 12px 22px rgba(30, 26, 56, 0.28); }
+    #s2-flood { background: var(--boli); z-index: 20; }
+  </style>
+  <div id="root" data-composition-id="s2" data-width="1920" data-height="1080">
+    <div id="s2-grid" class="full"></div>
+    <div id="s2-h" class="abs disp"><span>¿Y hoy</span> <span>qué</span> <span>toca?</span></div>
+
+    <div id="s2-xls" class="abs" data-layout-ignore>
+      <div class="bar txt">plan_opos_v7_FINAL(2).xlsx</div>
+      <table>
+        <tr><td class="h">1</td><td>Tema 12</td><td class="r">repasar??</td><td>—</td></tr>
+        <tr><td class="h">2</td><td>Tema 30</td><td class="y">pendiente</td><td>¿cuándo?</td></tr>
+        <tr><td class="h">3</td><td>Tema 47</td><td class="r">sin mirar</td><td>—</td></tr>
+        <tr><td class="h">4</td><td>Práctico 3</td><td class="y">a medias</td><td>mayo…</td></tr>
+        <tr><td class="h">5</td><td>Simulacro</td><td>—</td><td class="r">#¡REF!</td></tr>
+        <tr><td class="h">6</td><td>Tema 14</td><td>hecho (creo)</td><td>—</td></tr>
+        <tr><td class="h">7</td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+
+    <div id="s2-agenda" class="abs" data-layout-ignore>
+      <div class="rings"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="top disp">Semana 47</div>
+      <div class="ln txt"><b>L</b><s>Tema 14 entero</s></div>
+      <div class="ln txt"><b>M</b>práctico (¿cuál?)</div>
+      <div class="ln txt"><b>X</b><s>repasar 1 a 5</s></div>
+      <div class="ln txt"><b>J</b>recuperar el lunes</div>
+      <div class="ln txt"><b>V</b>TODO lo anterior</div>
+      <div class="ln txt"><b>S</b>—</div>
+    </div>
+
+    <div data-layout-ignore class="abs s2-post txt" style="left:1340px;top:250px;background:#fde68a">Repasar T12!!</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:1590px;top:330px;background:#fbbf24">¿Tema 30 cuándo?</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:1400px;top:520px;background:#fcd34d">simulacro YA</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:1630px;top:640px;background:#fde68a">T47 ???</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:1280px;top:770px;background:#fbbf24">prácticos antes de mayo</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:560px;top:760px;background:#fcd34d">mañana sí que sí</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:30px;top:720px;background:#fde68a">¿resumen del 22?</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:1010px;top:200px;background:#fcd34d">¡¡repasos!!</div>
+    <div data-layout-ignore class="abs s2-post txt" style="left:300px;top:250px;background:#fbbf24">genética otra vez</div>
+
+    <div id="s2-flood" class="full"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#s2-grid", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0);
+      tl.fromTo("#s2-flood", { clipPath: "circle(0px at 960px 540px)" }, { clipPath: "circle(0px at 960px 540px)", duration: 0.01 }, 0);
+      tl.fromTo("#s2-h span", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power4.out", stagger: 0.11 }, 0.3);
+
+      // "un Excel"
+      tl.fromTo("#s2-xls", { y: -900, rotation: -16, opacity: 1 }, { y: 0, rotation: -4, duration: 0.55, ease: "back.out(1.1)" }, 1.95);
+      // "una agenda"
+      tl.fromTo("#s2-agenda", { y: 900, rotation: 18 }, { y: 0, rotation: 5, duration: 0.55, ease: "back.out(1.1)" }, 2.95);
+      tl.to("#s2-xls", { rotation: -6, x: -14, duration: 0.3, ease: "power2.out" }, 3.2);
+      // "y mil pósits"
+      const rots = [-8, 6, -4, 9, -7, 5, -10, 7, 4];
+      gsap.utils.toArray(".s2-post").forEach((p, i) => {
+        tl.fromTo(p, { scale: 2.6, opacity: 0, rotation: rots[i] * 3 }, { scale: 1, opacity: 1, rotation: rots[i], duration: 0.26, ease: "power3.out" }, 3.75 + i * 0.12);
+      });
+      tl.to("#s2-h", { scale: 0.96, transformOrigin: "0% 50%", duration: 0.2, ease: "power2.out" }, 4.8);
+
+      // Violet floods from the centre: the app takes over.
+      tl.to("#s2-flood", { clipPath: "circle(1200px at 960px 540px)", duration: 0.5, ease: "power3.in" }, 5.28);
+      window.__timelines["s2"] = tl;
+    })();
+  </script>
+</template>

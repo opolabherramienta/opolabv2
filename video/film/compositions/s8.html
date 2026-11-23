@@ -1,0 +1,62 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--boli); overflow: hidden; }
+    #s8-deco1 { left: -180px; top: -220px; width: 640px; height: 640px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); }
+    #s8-deco2 { left: 1480px; top: 720px; width: 640px; height: 640px; border-radius: 50%; background: rgba(16, 185, 129, 0.4); }
+    #s8-deco3 { left: 1500px; top: 150px; width: 76px; height: 76px; border-radius: 50%; background: var(--subrayador); }
+    #s8-logo { left: 730px; top: 84px; width: 460px; height: 180px; }
+    #s8-l1 { left: 0; top: 326px; width: 1920px; text-align: center; font-size: 110px; line-height: 1.1; color: #fff; }
+    #s8-l1 span { display: inline-block; }
+    #s8-row { left: 0; top: 480px; width: 1920px; display: flex; justify-content: center; align-items: center; gap: 34px; }
+    #s8-box { background: var(--aprobado); box-shadow: 0 12px 0 var(--aprobado-edge); border-radius: 38px; padding: 6px 44px 14px; font-size: 110px; line-height: 1.15; color: #fff; white-space: nowrap; transform-origin: 0 50%; }
+    #s8-ball { width: 176px; height: 176px; font-size: 64px; flex: none; }
+    #s8-ball .hl { position: absolute; left: 20%; top: 14%; width: 30%; height: 22%; border-radius: 50%; background: rgba(255, 255, 255, 0.45); filter: blur(2px); }
+    #s8-cta { left: 0; top: 742px; width: 1920px; display: flex; justify-content: center; }
+    #s8-btn { background: #fff; color: #6d28d9; font-size: 58px; padding: 26px 76px 30px; border-radius: 34px; box-shadow: 0 12px 0 var(--boli-edge); }
+    #s8-sub { left: 0; top: 920px; width: 1920px; text-align: center; font-size: 38px; color: #ede9fe; }
+  </style>
+  <div id="root" data-composition-id="s8" data-width="1920" data-height="1080">
+    <div id="s8-deco1" class="abs"></div>
+    <div id="s8-deco2" class="abs"></div>
+    <div id="s8-deco3" class="abs"></div>
+    <img id="s8-logo" class="abs" src="assets/img/logo-opolab-blanco.png" alt="" />
+    <div id="s8-l1" class="abs disp"><span>Que</span> <span>la</span> <span>bola</span> <span>que</span> <span>salga</span> <span>sea</span></div>
+    <div id="s8-row" class="abs">
+      <div id="s8-box" class="disp"><span id="s8-boxt">una de las tuyas.</span></div>
+      <div id="s8-ball" class="ball b-mas"><span class="hl"></span>47</div>
+    </div>
+    <div id="s8-cta" class="abs"><div id="s8-btn" class="disp">Crear cuenta gratis</div></div>
+    <div id="s8-sub" class="abs txt">Para opositores a profesorado de Secundaria</div>
+    <div id="s8-cursor" class="cursor" data-cursor></div>
+  </div>
+  <script>
+    (function () {
+      OPO.fillIcons(document.querySelector("#s8-cursor").parentNode);
+      const tl = gsap.timeline({ paused: true });
+      const hide = (sel) => tl.fromTo(sel, { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      hide("#s8-l1 span"); hide("#s8-box"); hide("#s8-ball"); hide("#s8-btn"); hide("#s8-sub");
+      tl.fromTo("#s8-cursor", { x: 1500, y: 1150 }, { x: 1500, y: 1150, duration: 0.01 }, 0);
+      tl.fromTo(["#s8-deco1", "#s8-deco2", "#s8-deco3"], { scale: 0 }, { scale: 1, duration: 0.7, ease: "back.out(1.4)", stagger: 0.08 }, 0);
+      // "OpoLab": the mark wipes in.
+      tl.fromTo("#s8-logo", { clipPath: "inset(0% 100% 0% 0%)", x: -30 }, { clipPath: "inset(0% 0% 0% 0%)", x: 0, duration: 0.5, ease: "power3.out" }, 0.4);
+      // "Que la bola que salga sea"
+      tl.to("#s8-l1 span", { opacity: 1, duration: 0.13, stagger: 0.15 }, 1.55);
+      tl.fromTo("#s8-l1 span", { filter: "blur(8px)" }, { filter: "blur(0px)", duration: 0.13, stagger: 0.15 }, 1.55);
+      // "una de las tuyas."
+      tl.to("#s8-box", { opacity: 1, duration: 0.05 }, 2.85);
+      tl.fromTo("#s8-box", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "expo.out" }, 2.85);
+      tl.fromTo("#s8-boxt", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 3.0);
+      // Ball 47 lands: now it is one of yours.
+      tl.to("#s8-ball", { opacity: 1, duration: 0.03 }, 3.45);
+      tl.fromTo("#s8-ball", { y: -900, rotation: -200 }, { y: 0, rotation: 0, duration: 0.85, ease: "bounce.out" }, 3.45);
+      // "Crea tu cuenta gratis"
+      tl.to("#s8-btn", { opacity: 1, duration: 0.08 }, 4.6);
+      tl.fromTo("#s8-btn", { scale: 0.6, y: 0 }, { scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 4.6);
+      tl.to("#s8-sub", { opacity: 1, duration: 0.3, ease: "power2.out" }, 5.2);
+      tl.to("#s8-cursor", { x: 1010 - 18, y: 810 - 8, duration: 0.7, ease: "power3.out" }, 5.6);
+      tl.to("#s8-cursor", { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1 }, 6.4);
+      tl.to("#s8-btn", { y: 12, boxShadow: "0 0px 0 #6a3fe0", duration: 0.08, yoyo: true, repeat: 1 }, 6.42);
+      window.__timelines["s8"] = tl;
+    })();
+  </script>
+</template>

@@ -209,9 +209,16 @@ que salga. Puntos sin verificar con datos reales:
 
 ### 7. Vídeo de presentación
 
-Animación con las pantallas reales y voz (ElevenLabs o Silvia), para la
-portada e Instagram. Hacerlo cuando los pasos 1 a 3 estén cerrados, para no
-tener que rehacerlo.
+Primera versión hecha el 23 de noviembre (sin commit): 61,5 s, 1920×1080,
+voz de ElevenLabs ("Cristina", castellano neutro), música y efectos del catálogo de
+HyperFrames. Está en la portada, sección "OpoLab en un minuto"
+(`public/video/opolab-presentacion.mp4` y su `.jpg` de carátula). El proyecto
+editable es `video/film` (HyperFrames: `index.html` y `compositions/s1` a
+`s8`); el máster sale en `video/film/renders/`, que no se sube a git.
+
+Usa las capturas de `/dev-preview/*` y los datos de ejemplo: se ve "Hola,
+Marta" y "Andalucía". Rehacer capturas y render cuando cambien las pantallas
+o se quiera Castilla-La Mancha. Falta la versión vertical para Instagram.
 
 ### 8. Premium e IA
 

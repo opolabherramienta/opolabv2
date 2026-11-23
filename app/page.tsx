@@ -164,6 +164,28 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Presentation video */}
+      <section className="mx-auto w-full max-w-6xl px-5 pt-20">
+        <h2 className="max-w-2xl text-3xl font-extrabold text-slate-950 sm:text-4xl">
+          OpoLab en un minuto
+        </h2>
+        <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
+          Del bombo al plan de estudio: así funciona por dentro.
+        </p>
+        <div className="mt-8 overflow-hidden rounded-[1.75rem] border-2 border-b-[6px] border-slate-200 bg-boli">
+          <video
+            aria-label="Vídeo de presentación de OpoLab"
+            className="block aspect-video w-full"
+            controls
+            playsInline
+            poster="/video/opolab-presentacion.jpg"
+            preload="none"
+          >
+            <source src="/video/opolab-presentacion.mp4" type="video/mp4" />
+          </video>
+        </div>
+      </section>
+
       {/* Inside the app */}
       <section className="mx-auto w-full max-w-6xl px-5 py-20">
         <h2 className="max-w-2xl text-3xl font-extrabold text-slate-950 sm:text-4xl">

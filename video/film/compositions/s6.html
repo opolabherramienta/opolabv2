@@ -1,0 +1,144 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--azul); overflow: hidden; }
+    #s6-shot { transform-origin: 0 0; }
+    #s6-shot img { position: absolute; left: 0; top: 0; width: 1920px; height: 1400px; }
+    #s6-re { background: var(--papel); }
+    #s6-head { left: 160px; top: 60px; width: 1600px; height: 250px; }
+    #s6-ring { left: 40px; top: 32px; width: 176px; height: 176px; }
+    #s6-ringt { left: 40px; top: 32px; width: 176px; height: 176px; display: flex; align-items: center; justify-content: center; font-size: 54px; color: var(--tinta); }
+    #s6-ringt small { font-size: 34px; color: var(--s400); }
+    #s6-date { left: 256px; top: 36px; font-size: 34px; font-weight: 700; color: #6d28d9; }
+    .s6-ttl { left: 254px; top: 78px; font-size: 80px; color: var(--tinta); white-space: nowrap; }
+    #s6-sub { left: 256px; top: 178px; font-size: 34px; color: #514a72; }
+    #s6-racha { left: 1230px; top: 54px; width: 322px; height: 132px; border-radius: 32px; background: #fff7e0; }
+    #s6-flame { left: 20px; top: 22px; width: 88px; height: 88px; border-radius: 50%; background: var(--subrayador); box-shadow: inset 0 -7px 0 var(--subrayador-edge); color: var(--tinta); display: flex; align-items: center; justify-content: center; }
+    #s6-rn { left: 128px; top: 12px; font-size: 60px; color: var(--tinta); }
+    #s6-rl { left: 128px; top: 82px; font-size: 28px; color: #514a72; white-space: nowrap; }
+    #s6-card { left: 160px; top: 350px; width: 1600px; height: 280px; }
+    .s6-tile { left: 44px; top: 44px; width: 130px; height: 130px; border-radius: 34px; display: flex; align-items: center; justify-content: center; }
+    #s6-tile1 { background: #ede9fe; color: #6d28d9; }
+    #s6-tile2 { background: #d1fae5; color: var(--aprobado-edge); }
+    #s6-name { left: 214px; top: 40px; font-size: 62px; color: var(--tinta); white-space: nowrap; }
+    #s6-strike { left: 0; top: 52%; width: 100%; height: 6px; border-radius: 3px; background: var(--s400); transform-origin: 0 50%; position: absolute; }
+    #s6-meta { left: 214px; top: 148px; display: flex; align-items: center; gap: 18px; font-size: 34px; color: #514a72; }
+    #s6-meta b { background: var(--s100); border-radius: 30px; padding: 6px 22px; font-weight: 700; color: #3d375c; }
+    .s6-chk { right: 50px; top: 66px; width: 144px; height: 144px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    #s6-chk1 { background: #fff; border: 5px solid var(--s200); border-bottom-width: 10px; color: var(--s300); }
+    #s6-chk2 { background: var(--aprobado); box-shadow: 0 8px 0 var(--aprobado-edge); color: #fff; }
+    .s6-conf { left: 1632px; top: 482px; width: 18px; height: 28px; border-radius: 5px; }
+    #s6-plus { left: 1380px; top: 372px; font-size: 76px; color: var(--aprobado-edge); white-space: nowrap; z-index: 6; }
+    #s6-xp { left: 160px; top: 680px; width: 1600px; height: 240px; }
+    #s6-lvl { left: 44px; top: 54px; width: 124px; height: 124px; font-size: 56px; }
+    #s6-lname { left: 206px; top: 40px; font-size: 56px; color: var(--tinta); }
+    #s6-xpn { right: 50px; top: 52px; font-size: 44px; color: #514a72; font-weight: 700; }
+    #s6-track { left: 206px; top: 126px; width: 1344px; height: 34px; border-radius: 17px; background: var(--s200); overflow: hidden; }
+    #s6-fill { left: 0; top: 0; width: 100%; height: 100%; background: var(--aprobado); border-radius: 17px; transform-origin: 0 50%; }
+    #s6-xps { left: 206px; top: 176px; font-size: 32px; color: #514a72; }
+    #s6-iris { background: var(--aprobado); z-index: 9; }
+  </style>
+  <div id="root" data-composition-id="s6" data-width="1920" data-height="1080">
+    <div id="s6-shot" class="full" data-layout-allow-overflow><img src="assets/img/hoy.png" alt="" /></div>
+    <div id="s6-re" class="full">
+      <div id="s6-head" class="abs edge">
+        <svg id="s6-ring" class="abs" viewBox="0 0 176 176">
+          <circle cx="88" cy="88" r="74" fill="none" stroke="#ded7f3" stroke-width="22" />
+          <circle id="s6-arc" cx="88" cy="88" r="74" fill="none" stroke="#10b981" stroke-width="22" stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="349" transform="rotate(-90 88 88)" />
+        </svg>
+        <div id="s6-ringt" class="abs disp"><span id="s6-done">1</span><small>/4</small></div>
+        <div id="s6-date" class="abs txt">Lunes, 23 de noviembre</div>
+        <div id="s6-t1" class="abs s6-ttl disp">Te quedan 3 sesiones</div>
+        <div id="s6-t2" class="abs s6-ttl disp">Te quedan 2 sesiones</div>
+        <div id="s6-sub" class="abs txt">Unos 3 h de estudio.</div>
+        <div id="s6-racha" class="abs">
+          <div id="s6-flame" class="abs" data-icon="flame" data-size="52" data-stroke="2.4"></div>
+          <div id="s6-rn" class="abs disp">5</div>
+          <div id="s6-rl" class="abs txt">días de racha</div>
+        </div>
+      </div>
+
+      <div id="s6-card" class="abs edge">
+        <div id="s6-tile1" class="abs s6-tile" data-icon="balls" data-size="70"></div>
+        <div id="s6-tile2" class="abs s6-tile" data-icon="balls" data-size="70"></div>
+        <div id="s6-name" class="abs disp">Tema 15: El sistema inmunitario<span id="s6-strike"></span></div>
+        <div id="s6-meta" class="abs txt"><b>Tema nuevo</b><span data-icon="clock" data-size="34" style="display:flex"></span>1 h 30 min</div>
+        <div id="s6-chk1" class="abs s6-chk" data-icon="check" data-size="76" data-stroke="2.6"></div>
+        <div id="s6-chk2" class="abs s6-chk" data-icon="check" data-size="76" data-stroke="2.8"></div>
+      </div>
+
+      <div id="s6-confs"></div>
+      <div id="s6-plus" class="abs disp">+25 XP</div>
+
+      <div id="s6-xp" class="abs edge">
+        <div id="s6-lvl" class="abs ball b-mas">3</div>
+        <div id="s6-lname" class="abs disp">Preparador dedicado</div>
+        <div id="s6-xpn" class="abs txt"><span id="s6-xpv">640</span> XP</div>
+        <div id="s6-track" class="abs"><div id="s6-fill" class="abs"></div></div>
+        <div id="s6-xps" class="abs txt">Te faltan <span id="s6-left">260</span> XP para el nivel 4</div>
+      </div>
+    </div>
+    <div id="s6-cursor" class="cursor" data-cursor></div>
+    <div id="s6-iris" class="full"></div>
+  </div>
+  <script>
+    (function () {
+      const root = document.querySelector("#s6-cursor").parentNode;
+      const colors = ["#8b5cf6", "#10b981", "#fbbf24", "#3b82f6", "#f0483e"];
+      let html = "";
+      for (let i = 0; i < 18; i++) html += '<div class="abs s6-conf" style="background:' + colors[i % 5] + '"></div>';
+      document.querySelector("#s6-confs").innerHTML = html;
+      OPO.fillIcons(root);
+      const xpv = document.querySelector("#s6-xpv");
+      const left = document.querySelector("#s6-left");
+      const done = document.querySelector("#s6-done");
+      const xp = { v: 640 };
+      const st = { d: 1 };
+
+      const tl = gsap.timeline({ paused: true });
+      const hide = (sel) => tl.fromTo(sel, { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      hide("#s6-re"); hide("#s6-t2"); hide("#s6-tile2"); hide("#s6-chk2"); hide(".s6-conf"); hide("#s6-plus"); hide("#s6-xp");
+      tl.fromTo("#s6-iris", { clipPath: "circle(0px at 1638px 488px)" }, { clipPath: "circle(0px at 1638px 488px)", duration: 0.01 }, 0);
+      tl.fromTo("#s6-strike", { scaleX: 0 }, { scaleX: 0, duration: 0.01 }, 0);
+      tl.fromTo("#s6-fill", { scaleX: 0.35 }, { scaleX: 0.35, duration: 0.01 }, 0);
+      tl.fromTo("#s6-cursor", { x: 1960, y: 1100 }, { x: 1960, y: 1100, duration: 0.01 }, 0);
+      // The real "Hoy" screen whips in.
+      tl.fromTo("#s6-shot", { x: 1400, filter: "blur(18px)", scale: 1, y: 0 }, { x: 0, filter: "blur(0px)", duration: 0.42, ease: "power4.out" }, 0);
+      // "y sabes qué toca": push in on today's first session.
+      tl.to("#s6-shot", { scale: 1.569, x: -747, y: -6, duration: 0.65, ease: "power2.inOut" }, 2.05);
+      tl.to("#s6-re", { opacity: 1, duration: 0.22, ease: "power1.inOut" }, 2.58);
+      // "lo haces, lo marcas"
+      tl.to("#s6-cursor", { x: 1638 - 18, y: 496 - 8, duration: 0.8, ease: "power3.out" }, 3.6);
+      tl.to("#s6-cursor", { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1 }, 4.48);
+      tl.to("#s6-chk2", { opacity: 1, duration: 0.05 }, 4.52);
+      tl.fromTo("#s6-chk2", { scale: 0.7 }, { scale: 1, duration: 0.4, ease: "back.out(3)" }, 4.52);
+      tl.to("#s6-tile2", { opacity: 1, duration: 0.15 }, 4.52);
+      tl.to("#s6-strike", { scaleX: 1, duration: 0.3, ease: "power2.out" }, 4.56);
+      tl.to("#s6-name", { color: "#968db5", duration: 0.3 }, 4.56);
+      gsap.utils.toArray(".s6-conf").forEach((c, i) => {
+        const a = (i / 18) * Math.PI * 2 + 0.3;
+        const r = 170 + ((i * 53) % 130);
+        tl.to(c, { opacity: 1, duration: 0.02 }, 4.52);
+        tl.fromTo(c, { x: 0, y: 0, rotation: 0, scale: 1 }, { x: Math.cos(a) * r, y: Math.sin(a) * r + 60, rotation: 200 + i * 40, duration: 0.8, ease: "power3.out" }, 4.52);
+        tl.to(c, { opacity: 0, duration: 0.25 }, 5.1);
+      });
+      tl.to("#s6-plus", { opacity: 1, duration: 0.08 }, 4.6);
+      tl.fromTo("#s6-plus", { y: 30, scale: 0.6 }, { y: -40, scale: 1, duration: 0.5, ease: "back.out(2)" }, 4.6);
+      tl.to("#s6-plus", { y: -90, opacity: 0, duration: 0.35, ease: "power2.in" }, 5.5);
+      tl.to("#s6-arc", { attr: { "stroke-dashoffset": 232.5 }, duration: 0.5, ease: "power2.out" }, 4.62);
+      tl.to(st, { d: 2, duration: 0.01, onUpdate: () => { done.textContent = Math.round(st.d); } }, 4.62);
+      tl.to("#s6-t1", { opacity: 0, filter: "blur(8px)", duration: 0.15 }, 4.7);
+      tl.to("#s6-t2", { opacity: 1, duration: 0.15 }, 4.8);
+      tl.to("#s6-cursor", { x: 2000, y: 760, duration: 0.5, ease: "power3.in" }, 5.0);
+      // "y sumas experiencia y racha"
+      tl.to("#s6-xp", { opacity: 1, duration: 0.15 }, 5.5);
+      tl.fromTo("#s6-xp", { y: 90 }, { y: 0, duration: 0.5, ease: "expo.out" }, 5.5);
+      tl.to("#s6-fill", { scaleX: 0.4125, duration: 0.8, ease: "power2.out" }, 5.95);
+      tl.to(xp, { v: 665, duration: 0.8, ease: "power2.out", onUpdate: () => { const v = Math.round(xp.v); xpv.textContent = v; left.textContent = 900 - v; } }, 5.95);
+      tl.fromTo("#s6-racha", { scale: 1 }, { scale: 1.18, duration: 0.16, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, 6.95);
+      tl.fromTo("#s6-flame", { rotation: 0 }, { rotation: -14, duration: 0.1, yoyo: true, repeat: 3, ease: "sine.inOut", immediateRender: false }, 6.95);
+      // Green floods from the check: on to Progreso.
+      tl.to("#s6-iris", { clipPath: "circle(2000px at 1638px 488px)", duration: 0.48, ease: "power3.in" }, 7.9);
+      window.__timelines["s6"] = tl;
+    })();
+  </script>
+</template>

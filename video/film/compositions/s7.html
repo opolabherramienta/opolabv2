@@ -1,0 +1,54 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--aprobado); overflow: hidden; }
+    #s7-deco { left: 1500px; top: -260px; width: 640px; height: 640px; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
+    #s7-card { left: 140px; top: 110px; width: 1640px; height: 860px; background: #fff; border-radius: 48px; box-shadow: 0 16px 0 var(--aprobado-edge); }
+    #s7-ring { left: 70px; top: 170px; width: 520px; height: 520px; }
+    #s7-pct { left: 70px; top: 170px; width: 520px; height: 520px; display: flex; align-items: center; justify-content: center; font-size: 170px; color: var(--tinta); }
+    #s7-pct small { font-size: 80px; color: var(--s400); }
+    #s7-title { left: 690px; top: 96px; font-size: 92px; color: var(--tinta); white-space: nowrap; }
+    .s7-row { left: 690px; width: 870px; }
+    .s7-row .lab { font-size: 42px; font-weight: 700; color: var(--tinta); }
+    .s7-row .det { position: absolute; right: 0; top: 4px; font-size: 38px; color: var(--s500); }
+    .s7-row .trk { margin-top: 16px; height: 36px; border-radius: 18px; background: var(--s200); overflow: hidden; }
+    .s7-row .fil { height: 100%; border-radius: 18px; transform-origin: 0 50%; }
+    #s7-iris { background: var(--boli); z-index: 9; }
+  </style>
+  <div id="root" data-composition-id="s7" data-width="1920" data-height="1080">
+    <div id="s7-deco" class="abs"></div>
+    <div id="s7-card" class="abs">
+      <svg id="s7-ring" class="abs" viewBox="0 0 520 520">
+        <circle cx="260" cy="260" r="215" fill="none" stroke="#ded7f3" stroke-width="62" />
+        <circle id="s7-arc" cx="260" cy="260" r="215" fill="none" stroke="#10b981" stroke-width="62" stroke-linecap="round" stroke-dasharray="1351" stroke-dashoffset="1351" transform="rotate(-90 260 260)" />
+      </svg>
+      <div id="s7-pct" class="abs disp"><span id="s7-n">0</span><small>%</small></div>
+      <div id="s7-title" class="abs disp">Vas cogiendo ritmo</div>
+      <div id="s7-r1" class="abs s7-row txt" style="top:290px"><div class="lab">Temas estudiados</div><div class="det">27 de 62</div><div class="trk"><div class="fil" style="width:44%;background:var(--boli)"></div></div></div>
+      <div id="s7-r2" class="abs s7-row txt" style="top:460px"><div class="lab">Con resumen</div><div class="det">38 de 62</div><div class="trk"><div class="fil" style="width:61%;background:var(--subrayador)"></div></div></div>
+      <div id="s7-r3" class="abs s7-row txt" style="top:630px"><div class="lab">Prácticos dominados</div><div class="det">2 de 6</div><div class="trk"><div class="fil" style="width:33%;background:var(--aprobado)"></div></div></div>
+    </div>
+    <div id="s7-iris" class="full"></div>
+  </div>
+  <script>
+    (function () {
+      const nEl = document.querySelector("#s7-n");
+      const p = { v: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#s7-iris", { clipPath: "circle(0px at 470px 540px)" }, { clipPath: "circle(0px at 470px 540px)", duration: 0.01 }, 0);
+      tl.fromTo(".s7-row", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo("#s7-card", { scale: 0.86, opacity: 0, y: 60 }, { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0);
+      tl.fromTo("#s7-title", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.45);
+      // "ves, de un vistazo": the ring draws to the real figure.
+      tl.fromTo("#s7-arc", { attr: { "stroke-dashoffset": 1351 } }, { attr: { "stroke-dashoffset": 729.5 }, duration: 1.4, ease: "power3.out" }, 0.5);
+      tl.fromTo(p, { v: 0 }, { v: 46, duration: 1.4, ease: "power3.out", onUpdate: () => { nEl.textContent = Math.round(p.v); } }, 0.5);
+      ["#s7-r1", "#s7-r2", "#s7-r3"].forEach((sel, i) => {
+        const t = 1.85 + i * 0.45;
+        tl.to(sel, { opacity: 1, duration: 0.15 }, t);
+        tl.fromTo(sel, { x: 50 }, { x: 0, duration: 0.35, ease: "power4.out" }, t);
+        tl.fromTo(sel + " .fil", { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: "expo.out" }, t + 0.1);
+      });
+      tl.to("#s7-iris", { clipPath: "circle(1800px at 470px 540px)", duration: 0.48, ease: "power3.in" }, 4.7);
+      window.__timelines["s7"] = tl;
+    })();
+  </script>
+</template>

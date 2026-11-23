@@ -1,0 +1,85 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--papel); overflow: hidden; }
+    #s4-cam { transform-origin: 312px 632px; }
+    #s4-card { left: 110px; top: 110px; width: 1700px; height: 724px; }
+    #s4-title { left: 48px; top: 40px; font-size: 60px; color: var(--tinta); }
+    #s4-count { right: 48px; top: 52px; font-size: 40px; color: var(--s500); }
+    #s4-count b { color: #6d28d9; font-family: var(--display); font-weight: 800; font-size: 48px; }
+    #s4-grid { left: 45px; top: 149px; display: grid; grid-template-columns: repeat(15, 92px); gap: 16px; }
+    #s4-grid .ball { width: 92px; height: 92px; font-size: 34px; }
+    #s4-legend { left: 110px; top: 876px; width: 1700px; display: flex; gap: 70px; justify-content: center; }
+    .s4-lg { display: flex; align-items: center; gap: 18px; font-size: 44px; color: var(--tinta); }
+    .s4-lg .ball { width: 54px; height: 54px; font-size: 54px; }
+    #s4-iris { background: var(--azul); z-index: 9; }
+  </style>
+  <div id="root" data-composition-id="s4" data-width="1920" data-height="1080">
+    <div id="s4-cam" class="full" data-layout-allow-overflow>
+      <div id="s4-card" class="abs edge">
+        <div id="s4-title" class="abs disp">El bombo</div>
+        <div id="s4-count" class="abs txt">Llevas <b id="s4-n">0</b> de 75 temas</div>
+        <div id="s4-grid" class="abs"></div>
+      </div>
+      <div id="s4-legend" class="abs">
+        <div class="s4-lg txt" id="s4-lg1"><span class="ball b-sel"></span>Elegido</div>
+        <div class="s4-lg txt" id="s4-lg2"><span class="ball b-sta"></span>En marcha</div>
+        <div class="s4-lg txt" id="s4-lg3"><span class="ball b-stu"></span>Estudiado</div>
+        <div class="s4-lg txt" id="s4-lg4"><span class="ball b-mas"></span>Dominado</div>
+      </div>
+    </div>
+    <div id="s4-cursor" class="cursor" data-cursor></div>
+    <div id="s4-iris" class="full"></div>
+  </div>
+  <script>
+    (function () {
+      const grid = document.querySelector("#s4-grid");
+      let html = "";
+      for (let n = 1; n <= 75; n++) {
+        const st = n === 47 ? "sta" : OPO.state(n);
+        html += '<div class="ball b-off s4-b" data-layout-ignore id="s4-b' + n + '">' + n;
+        if (st !== "off") {
+          html += '<span data-layout-ignore class="lay b-sel s4-sel' + (n === 47 ? "47" : "") + '">' + n + "</span>";
+          if (st !== "sel") html += '<span data-layout-ignore class="lay b-' + st + " s4-" + (n === 47 ? "c47" : st) + '">' + n + "</span>";
+        }
+        html += "</div>";
+      }
+      grid.innerHTML = html;
+      OPO.fillIcons(document.querySelector("#s4-cursor").parentNode);
+      const nEl = document.querySelector("#s4-n");
+      const cnt = { v: 0 };
+      const show = () => { nEl.textContent = Math.round(cnt.v); };
+
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#s4-iris", { clipPath: "circle(0px at 760px 560px)" }, { clipPath: "circle(0px at 760px 560px)", duration: 0.01 }, 0);
+      tl.fromTo(".s4-b .lay", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo([".s4-lg", "#s4-count"], { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo("#s4-cursor", { x: 1500, y: 1150 }, { x: 1500, y: 1150, duration: 0.01 }, 0);
+      tl.fromTo("#s4-card", { y: 50, scale: 0.97, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "expo.out" }, 0);
+      // "bola a bola": the 75 balls drop in.
+      tl.fromTo(".s4-b", { scale: 0, y: -40 }, { scale: 1, y: 0, duration: 0.42, ease: "back.out(1.8)", stagger: 0.016 }, 0.35);
+      // "eliges los temas que llevas"
+      tl.to("#s4-count", { opacity: 1, duration: 0.2 }, 2.95);
+      tl.to(".s4-sel", { opacity: 1, duration: 0.12, stagger: 0.02 }, 3.13);
+      tl.fromTo(cnt, { v: 0 }, { v: 52, duration: 1.1, ease: "none", onUpdate: show }, 3.13);
+      tl.to("#s4-lg1", { opacity: 1, duration: 0.2 }, 3.3);
+      tl.to("#s4-cursor", { x: 312 - 18, y: 632 - 8, duration: 0.7, ease: "power3.out" }, 3.55);
+      tl.to("#s4-cursor", { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1 }, 4.3);
+      tl.to(".s4-sel47", { opacity: 1, duration: 0.05 }, 4.34);
+      tl.fromTo("#s4-b47", { scale: 1 }, { scale: 1.25, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, 4.34);
+      tl.to(cnt, { v: 53, duration: 0.05, onUpdate: show }, 4.34);
+      tl.to("#s4-cursor", { x: -200, y: 1000, duration: 0.6, ease: "power3.in" }, 4.6);
+      // "cada bola cambia de color"
+      [["sta", 4.94, "#s4-lg2"], ["stu", 5.5, "#s4-lg3"], ["mas", 6.1, "#s4-lg4"]].forEach(([k, t, lg]) => {
+        tl.to(".s4-" + k, { opacity: 1, duration: 0.14, stagger: 0.03 }, t);
+        tl.fromTo(".s4-" + k, { scale: 0.4 }, { scale: 1, duration: 0.4, ease: "back.out(2.5)", stagger: 0.03 }, t);
+        tl.to(lg, { opacity: 1, duration: 0.2 }, t);
+      });
+      // Push in on ball 47: it moves on too.
+      tl.to("#s4-cam", { scale: 1.5, x: 448, y: -72, duration: 0.8, ease: "power2.inOut" }, 6.75);
+      tl.to(".s4-c47", { opacity: 1, duration: 0.08 }, 7.7);
+      tl.fromTo("#s4-b47", { scale: 1 }, { scale: 1.3, duration: 0.14, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, 7.7);
+      tl.to("#s4-iris", { clipPath: "circle(1500px at 760px 560px)", duration: 0.48, ease: "power3.in" }, 8.9);
+      window.__timelines["s4"] = tl;
+    })();
+  </script>
+</template>
