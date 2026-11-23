@@ -23,6 +23,17 @@ export default function DevPreviewInicio() {
       communityName="Andalucía"
       daysRemaining={207}
       firstName="Marta"
+      game={{
+        xpTotal: 640,
+        xpThisWeek: 85,
+        streak: 12,
+        bestStreak: 12,
+        studiedToday: true,
+        level: { number: 3, name: "Preparador dedicado", minXp: 500, nextXp: 900 },
+        levelPercent: 35,
+        xpToNextLevel: 260,
+      }}
+      hasPlan
       loadError={null}
       oppositionDateLabel="19 de junio de 2027"
       practicals={{ total: 6, worked: 4, mastered: 2 }}

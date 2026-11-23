@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Ball, ballStateLabels, type BallState } from "@/components/ui/Ball";
+import { GeneratePlanCard } from "@/components/plan/GeneratePlanCard";
 import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { ProgressBar, ProgressRing } from "@/components/ui/Progress";
 import { StatCard } from "@/components/ui/StatCard";
+import type { GameSummary } from "@/lib/study/gamification";
 
 export type DashboardBall = {
   id: string;
@@ -28,6 +30,8 @@ export type DashboardViewProps = {
   oppositionDateLabel: string;
   daysRemaining: number | null;
   loadError: string | null;
+  game: GameSummary;
+  hasPlan: boolean;
   balls: DashboardBall[];
   topics: {
     selected: number;
@@ -79,6 +83,8 @@ export function DashboardView({
   communityName,
   daysRemaining,
   firstName,
+  game,
+  hasPlan,
   loadError,
   oppositionDateLabel,
   practicals,
@@ -165,6 +171,67 @@ export function DashboardView({
           </div>
         </div>
       </section>
+
+      {/* Streak and level */}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-[auto_1fr]">
+        <div
+          className={[
+            "edge flex items-center gap-3.5 px-5 py-4",
+            game.streak > 0 ? "border-subrayador-edge/60 bg-amber-50" : "",
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
+              game.streak > 0
+                ? "bg-subrayador text-slate-900 shadow-[inset_0_-4px_0_var(--color-subrayador-edge)]"
+                : "bg-slate-100 text-slate-400",
+            ].join(" ")}
+          >
+            <Icon name="flame" size={30} />
+          </span>
+          <div>
+            <p className="font-display text-3xl leading-none font-extrabold text-slate-950 tabular-nums">
+              {game.streak}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-slate-600">
+              {game.streak === 1 ? "día de racha" : "días de racha"}
+            </p>
+            <p className="text-xs font-medium text-slate-500">
+              {game.streak === 0
+                ? "Completa una sesión para empezar"
+                : game.studiedToday
+                  ? "Hoy ya has estudiado"
+                  : "Se mantiene si no paras una semana"}
+            </p>
+          </div>
+        </div>
+
+        <div className="edge min-w-0 px-5 py-4">
+          <div className="flex items-center gap-3.5">
+            <Ball number={game.level.number} size="lg" state="mastered" />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                <p className="font-display text-xl font-extrabold text-slate-950">
+                  {game.level.name}
+                </p>
+                <p className="text-sm font-bold text-slate-500 tabular-nums">
+                  {game.xpTotal} XP
+                </p>
+              </div>
+              <ProgressBar className="mt-2" tone="aprobado" value={game.levelPercent} />
+              <p className="mt-1.5 text-sm font-medium text-slate-500">
+                {game.xpToNextLevel === null
+                  ? "Has llegado al nivel más alto"
+                  : `Te faltan ${game.xpToNextLevel} XP para el nivel ${game.level.number + 1}`}
+                {game.xpThisWeek > 0 ? `. Esta semana llevas ${game.xpThisWeek} XP` : ""}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {!hasPlan ? <GeneratePlanCard hasPlan={false} /> : null}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.25fr_1fr]">
         {/* Temario as balls */}

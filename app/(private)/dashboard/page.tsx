@@ -1,9 +1,10 @@
-﻿import {
+import {
   DashboardView,
   type DashboardBall,
   type DashboardTask,
 } from "@/components/dashboard/dashboard-view";
 import { getTopicBallState } from "@/components/ui/Ball";
+import { summarizeGame } from "@/lib/study/gamification";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -52,6 +53,8 @@ type CalendarTask = {
   task_date: string | null;
   task_type: string | null;
   status: string | null;
+  completed_at: string | null;
+  is_auto_generated: boolean | null;
 };
 
 function toDateKey(date: Date) {
@@ -176,7 +179,7 @@ export default async function DashboardPage() {
       .eq("user_id", user.id),
     supabase
       .from("calendar_tasks")
-      .select("id, title, task_date, task_type, status")
+      .select("id, title, task_date, task_type, status, completed_at, is_auto_generated")
       .eq("user_id", user.id),
   ]);
 
@@ -268,6 +271,22 @@ export default async function DashboardPage() {
       )}
       daysRemaining={calculateDaysRemaining(oppositionDateKey, today)}
       firstName={profile?.full_name?.trim().split(/\s+/)[0] || null}
+      game={summarizeGame(
+        tasks.map((task) => ({
+          taskType: task.task_type,
+          title: task.title,
+          status: task.status,
+          completedAt: task.completed_at,
+          taskDate: task.task_date,
+        })),
+        today,
+      )}
+      hasPlan={tasks.some(
+        (task) =>
+          task.is_auto_generated === true &&
+          task.status === "pending" &&
+          (normalizeDateKey(task.task_date) ?? "") >= todayKey,
+      )}
       loadError={
         firstError
           ? `No se pudieron cargar tus datos: ${firstError.message}`

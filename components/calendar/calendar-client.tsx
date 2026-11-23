@@ -1,11 +1,13 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ConfettiBurst, useConfetti } from "@/components/ui/Confetti";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { fieldClasses } from "@/components/ui/Input";
 import { Chip } from "@/components/ui/Progress";
+import { getSessionXp, summarizeGame } from "@/lib/study/gamification";
+import { getSessionKind, toDateKey as toLocalDateKey } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/client";
 
 type CalendarTaskType = "study_topic" | "practical" | "rest";
@@ -20,6 +22,10 @@ export type CalendarSession = {
   status: CalendarTaskStatus;
   completedAt: string | null;
   createdAt: string | null;
+  /** Links set by the automatic plan; completing the session updates them. */
+  userTopicId?: string | null;
+  userPracticalId?: string | null;
+  estimatedMinutes?: number | null;
 };
 
 type CalendarTaskRow = {
@@ -31,6 +37,9 @@ type CalendarTaskRow = {
   status: CalendarTaskStatus | null;
   completed_at: string | null;
   created_at: string | null;
+  user_topic_id?: string | null;
+  user_practical_id?: string | null;
+  estimated_duration_minutes?: number | null;
 };
 
 type CalendarTaskPayload = {
@@ -129,6 +138,9 @@ function rowToSession(row: CalendarTaskRow): CalendarSession {
     status: normalizeTaskStatus(row.status),
     completedAt: row.completed_at,
     createdAt: row.created_at,
+    userTopicId: row.user_topic_id ?? null,
+    userPracticalId: row.user_practical_id ?? null,
+    estimatedMinutes: row.estimated_duration_minutes ?? null,
   };
 }
 
@@ -303,6 +315,7 @@ type SessionRowProps = {
   onLocalChange: (patch: Partial<CalendarSession>) => void;
   onToggleEdit: () => void;
   onUpdate: (patch: Partial<CalendarSession>) => void;
+  streak: number;
 };
 
 function SessionRow({
@@ -314,8 +327,11 @@ function SessionRow({
   onToggleEdit,
   onUpdate,
   session,
+  streak,
 }: SessionRowProps) {
   const { burst, fire } = useConfetti();
+  const [xpPop, setXpPop] = useState<{ id: number; xp: number } | null>(null);
+  const xpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const disabled = isSaving || isDeleting;
   const isCompleted = session.status === "completed";
   const isCancelled = session.status === "cancelled";
@@ -327,6 +343,14 @@ function SessionRow({
     }
 
     fire();
+    const xp = getSessionXp(session.taskType, session.title, streak);
+
+    if (xp > 0) {
+      if (xpTimer.current) clearTimeout(xpTimer.current);
+      setXpPop({ id: Date.now(), xp });
+      xpTimer.current = setTimeout(() => setXpPop(null), 1500);
+    }
+
     onUpdate({ status: "completed" });
   }
 
@@ -399,6 +423,15 @@ function SessionRow({
             <Icon name="check" size={24} strokeWidth={3} />
           </button>
           <ConfettiBurst burst={burst} />
+          {xpPop ? (
+            <span
+              className="xp-pop pointer-events-none absolute -top-2 right-0 z-10 rounded-full bg-subrayador px-2.5 py-1 text-sm font-extrabold whitespace-nowrap text-slate-900 shadow-[0_3px_0_var(--color-subrayador-edge)]"
+              key={xpPop.id}
+              role="status"
+            >
+              +{xpPop.xp} XP
+            </span>
+          ) : null}
         </span>
       </div>
 
@@ -532,7 +565,113 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
     "status",
     "completed_at",
     "created_at",
+    "user_topic_id",
+    "user_practical_id",
+    "estimated_duration_minutes",
   ].join(", ");
+
+  // Streak as of now, so the XP shown on completing matches the dashboard.
+  const streak = useMemo(
+    () =>
+      summarizeGame(
+        sessions.map((session) => ({
+          taskType: session.taskType,
+          title: session.title,
+          status: session.status,
+          completedAt: session.completedAt,
+          taskDate: session.taskDate,
+        })),
+      ).streak,
+    [sessions],
+  );
+
+  // Completing a planned session also moves the topic or practical forward,
+  // and undoing it moves it back. A failure here never blocks the calendar.
+  async function syncProgress(session: CalendarSession, direction: 1 | -1) {
+    const kind = getSessionKind(session.taskType, session.title);
+    const todayKey = toLocalDateKey(new Date());
+
+    try {
+      if (session.userTopicId && kind !== "practical" && kind !== "rest") {
+        const current = await supabase
+          .from("user_topics")
+          .select("review_count, simulation_count")
+          .eq("id", session.userTopicId)
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (current.error || !current.data) {
+          throw new Error(current.error?.message ?? "Tema no encontrado");
+        }
+
+        const row = current.data as {
+          review_count: number | null;
+          simulation_count: number | null;
+        };
+        const patch: Record<string, unknown> =
+          kind === "study"
+            ? { studied_done: direction > 0 }
+            : kind === "review"
+              ? {
+                  review_count: Math.max(0, (row.review_count ?? 0) + direction),
+                  ...(direction > 0 ? { last_review_date: todayKey } : {}),
+                }
+              : {
+                  simulation_count: Math.max(
+                    0,
+                    (row.simulation_count ?? 0) + direction,
+                  ),
+                };
+        const result = await supabase
+          .from("user_topics")
+          .update(patch)
+          .eq("id", session.userTopicId)
+          .eq("user_id", userId);
+
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+      }
+
+      if (session.userPracticalId && kind === "practical") {
+        const current = await supabase
+          .from("user_practicals")
+          .select("times_worked, status")
+          .eq("id", session.userPracticalId)
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (current.error || !current.data) {
+          throw new Error(current.error?.message ?? "Práctico no encontrado");
+        }
+
+        const row = current.data as {
+          times_worked: number | null;
+          status: string | null;
+        };
+        const result = await supabase
+          .from("user_practicals")
+          .update({
+            times_worked: Math.max(0, (row.times_worked ?? 0) + direction),
+            ...(direction > 0 && row.status === "not_started"
+              ? { status: "worked" }
+              : {}),
+            ...(direction > 0 ? { last_worked_date: todayKey } : {}),
+          })
+          .eq("id", session.userPracticalId)
+          .eq("user_id", userId);
+
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+      }
+    } catch (syncError) {
+      console.error("Error actualizando el progreso:", syncError);
+      setError(
+        "La sesión se ha guardado, pero no se pudo actualizar el progreso del tema o práctico.",
+      );
+    }
+  }
 
   const stats = useMemo(() => {
     const todayKey = getTodayInputValue();
@@ -687,6 +826,13 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
           )
           .sort((a, b) => a.taskDate.localeCompare(b.taskDate)),
       );
+
+      const wasCompleted = currentSession.status === "completed";
+      const isNowCompleted = nextStatus === "completed";
+
+      if (wasCompleted !== isNowCompleted) {
+        await syncProgress(currentSession, isNowCompleted ? 1 : -1);
+      }
     } catch (saveError) {
       console.error("Error guardando sesión:", saveError);
       console.error("Payload enviado:", payload);
@@ -986,6 +1132,7 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
                   }
                   onUpdate={(patch) => updateSession(session.id, patch)}
                   session={session}
+                  streak={streak}
                 />
               ))}
             </ul>
