@@ -1,4 +1,4 @@
--- PROPUESTA, NO APLICADA. Ejecutar a mano en el editor SQL de Supabase.
+-- APLICADA el 23 de noviembre de 2026 (cargada por la API). Se conserva como registro.
 -- Añade la especialidad Biología y Geología (Secundaria) con su temario
 -- oficial de 75 temas. Se puede ejecutar más de una vez sin duplicar nada.
 -- Revisa antes que el temario coincide con la convocatoria vigente.
