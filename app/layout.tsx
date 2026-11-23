@@ -13,7 +13,7 @@ const body = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Opolab · Organiza tu oposición docente",
+  title: "OpoLab · Organiza tu oposición docente",
   description: "Ordena tu temario, tus prácticos y tus semanas de estudio para llegar al examen de oposición sabiendo cómo vas.",
 };
 

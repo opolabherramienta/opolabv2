@@ -174,7 +174,7 @@ export function ProgressView({
           icon="flask"
           linkLabel="Ir a mis prácticos"
           title="Prácticos"
-          tone="bg-yellow-100 text-yellow-800"
+          tone="bg-amber-100 text-amber-700"
         >
           <ProgressBar
             detail={`${practicals.mastered} de ${practicals.total}`}
@@ -216,7 +216,7 @@ export function ProgressView({
         </Block>
       </div>
 
-      <section className="rounded-[1.375rem] border-2 border-b-[5px] border-subrayador-edge/50 bg-yellow-50 p-5 sm:p-6">
+      <section className="rounded-[1.375rem] border-2 border-b-[5px] border-subrayador-edge/50 bg-amber-50 p-5 sm:p-6">
         <h2 className="text-xl font-extrabold text-slate-950">
           Tu siguiente paso
         </h2>

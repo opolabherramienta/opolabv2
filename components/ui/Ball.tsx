@@ -19,7 +19,7 @@ const stateClasses: Record<BallState, string> = {
   started:
     "bg-subrayador text-slate-900 shadow-[inset_0_-4px_0_var(--color-subrayador-edge)]",
   studied:
-    "bg-boli text-white shadow-[inset_0_-4px_0_var(--color-boli-edge)]",
+    "bg-azul text-white shadow-[inset_0_-4px_0_var(--color-azul-edge)]",
   mastered:
     "bg-aprobado text-white shadow-[inset_0_-4px_0_var(--color-aprobado-edge)]",
 };

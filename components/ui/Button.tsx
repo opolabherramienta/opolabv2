@@ -1,7 +1,14 @@
 ﻿import Link from "next/link";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "warning" | "success";
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "warning"
+  | "success"
+  | "light"
+  | "glass";
 type ButtonSize = "md" | "lg" | "sm";
 
 type ButtonProps = {
@@ -14,12 +21,17 @@ type ButtonProps = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "press bg-boli text-white [--press-edge:var(--color-boli-edge)] hover:bg-violet-500",
+    "press bg-boli text-white [--press-edge:var(--color-boli-edge)] hover:bg-violet-400",
   secondary:
     "press border-2 border-slate-200 bg-white text-violet-700 [--press-edge:var(--color-slate-200)] hover:bg-violet-50",
   ghost: "text-slate-700 hover:bg-slate-100",
   warning:
     "press bg-subrayador text-slate-900 [--press-edge:var(--color-subrayador-edge)]",
+  // For violet backgrounds.
+  light:
+    "press bg-white text-violet-700 [--press-edge:var(--color-boli-edge)] hover:bg-violet-50",
+  glass:
+    "border-2 border-white/45 bg-white/10 text-white transition-colors hover:bg-white/20",
   success:
     "press bg-aprobado text-white [--press-edge:var(--color-aprobado-edge)]",
 };

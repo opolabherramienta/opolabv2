@@ -50,7 +50,7 @@ export type DashboardViewProps = {
 
 const taskIcons: Record<string, { icon: IconName; label: string; tone: string }> = {
   study_topic: { icon: "balls", label: "Tema", tone: "bg-violet-100 text-violet-700" },
-  practical: { icon: "flask", label: "Práctico", tone: "bg-yellow-100 text-yellow-800" },
+  practical: { icon: "flask", label: "Práctico", tone: "bg-amber-100 text-amber-700" },
   rest: { icon: "moon", label: "Descanso", tone: "bg-slate-100 text-slate-600" },
 };
 

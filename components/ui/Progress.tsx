@@ -134,7 +134,7 @@ const chipTone: Record<ChipTone, string> = {
   neutral: "bg-slate-100 text-slate-700",
   boli: "bg-violet-100 text-violet-800",
   aprobado: "bg-emerald-100 text-emerald-800",
-  subrayador: "bg-yellow-100 text-yellow-900",
+  subrayador: "bg-amber-100 text-amber-900",
   rojo: "bg-red-100 text-red-800",
 };
 

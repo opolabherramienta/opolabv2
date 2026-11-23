@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Logo } from "@/components/ui/Logo";
 
 export type SidebarItem = {
   href: string;
@@ -41,13 +42,8 @@ function isActiveItem(pathname: string, href: string, items: SidebarItem[]) {
 
 function Brand({ productName }: { productName: string }) {
   return (
-    <Link className="flex items-center gap-2.5" href="/">
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-boli font-display text-lg font-extrabold text-white shadow-[inset_0_-3px_0_var(--color-boli-edge)]">
-        O
-      </span>
-      <span className="font-display text-xl font-extrabold text-slate-950">
-        {productName}
-      </span>
+    <Link aria-label={productName} className="inline-flex" href="/">
+      <Logo height={38} variant="blanco" />
     </Link>
   );
 }
@@ -60,7 +56,7 @@ export function Sidebar({ footerAction, items, productName }: SidebarProps) {
   return (
     <>
       {/* Desktop: side rail */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r-2 border-slate-200 bg-white px-4 py-6 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-boli px-4 py-6 text-white lg:flex">
         <div className="px-2">
           <Brand productName={productName} />
         </div>
@@ -74,8 +70,8 @@ export function Sidebar({ footerAction, items, productName }: SidebarProps) {
                 className={[
                   "flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-[15px] font-bold transition-colors",
                   isActive
-                    ? "border-violet-200 bg-violet-50 text-violet-700"
-                    : "border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                    ? "border-white bg-white text-violet-700 shadow-[0_3px_0_var(--color-boli-edge)]"
+                    : "border-transparent text-white/85 hover:bg-white/15 hover:text-white",
                 ].join(" ")}
                 href={item.href}
                 key={item.href}
@@ -86,11 +82,15 @@ export function Sidebar({ footerAction, items, productName }: SidebarProps) {
             );
           })}
         </nav>
-        {footerAction ? <div className="mt-auto">{footerAction}</div> : null}
+        {footerAction ? (
+          <div className="mt-auto [&_button]:text-white/85 [&_button]:hover:bg-white/15 [&_button]:hover:text-white">
+            {footerAction}
+          </div>
+        ) : null}
       </aside>
 
       {/* Mobile: slim top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b-2 border-slate-200 bg-white/95 px-4 py-2.5 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between bg-boli px-4 py-2.5 text-white lg:hidden">
         <Brand productName={productName} />
         <div className="flex items-center gap-1">
           {extras.map((item) => {
@@ -102,7 +102,7 @@ export function Sidebar({ footerAction, items, productName }: SidebarProps) {
                 aria-label={item.label}
                 className={[
                   "flex h-10 items-center justify-center rounded-xl px-2.5 text-sm font-bold",
-                  isActive ? "bg-violet-50 text-violet-700" : "text-slate-600",
+                  isActive ? "bg-white text-violet-700" : "text-white",
                 ].join(" ")}
                 href={item.href}
                 key={item.href}

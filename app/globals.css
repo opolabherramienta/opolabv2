@@ -1,11 +1,9 @@
 ﻿@import "tailwindcss";
 
 /*
-  Opolab visual system — "material de opositor".
-  Blue pen (boli), yellow highlighter (subrayador), green pass mark (aprobado),
-  red correction pen (rojo) and the numbered exam balls (bolas).
-  The violet and slate scales are remapped so existing utility classes follow
-  the palette: violet-* is the blue pen, slate-* is ink on paper.
+  OpoLab visual system. Brand colours from the logo and Instagram designs:
+  violet #8b5cf6 (boli), green #10b981 (aprobado), blue #3b82f6 (azul) and
+  amber (subrayador). slate-* is remapped to violet-tinted ink on lilac paper.
 */
 @theme inline {
   --font-sans: var(--font-opolab-body), ui-sans-serif, system-ui, sans-serif;
@@ -13,40 +11,30 @@
 }
 
 @theme {
-  --color-violet-50: #eef1ff;
-  --color-violet-100: #dfe4ff;
-  --color-violet-200: #c3cbff;
-  --color-violet-300: #9ba8ff;
-  --color-violet-400: #6f7fff;
-  --color-violet-500: #4a5cff;
-  --color-violet-600: #2f43f5;
-  --color-violet-700: #2434d6;
-  --color-violet-800: #1e2ba8;
-  --color-violet-900: #1b2680;
-  --color-violet-950: #111852;
+  --color-slate-50: #f6f3ff;
+  --color-slate-100: #eee9fb;
+  --color-slate-200: #ded7f3;
+  --color-slate-300: #c5bce0;
+  --color-slate-400: #968db5;
+  --color-slate-500: #6e6690;
+  --color-slate-600: #514a72;
+  --color-slate-700: #3d375c;
+  --color-slate-800: #292445;
+  --color-slate-900: #1e1a38;
+  --color-slate-950: #14112a;
 
-  --color-slate-50: #f5f6fb;
-  --color-slate-100: #eceef6;
-  --color-slate-200: #dde0ee;
-  --color-slate-300: #c3c8dc;
-  --color-slate-400: #9299b5;
-  --color-slate-500: #6a7191;
-  --color-slate-600: #4d5474;
-  --color-slate-700: #3a4060;
-  --color-slate-800: #262b48;
-  --color-slate-900: #1b1f3b;
-  --color-slate-950: #12152b;
-
-  --color-boli: #2f43f5;
-  --color-boli-edge: #1e2ba8;
-  --color-subrayador: #ffe14d;
-  --color-subrayador-edge: #e0b400;
-  --color-aprobado: #12b76a;
-  --color-aprobado-edge: #0b8a4f;
+  --color-boli: #8b5cf6;
+  --color-boli-edge: #6a3fe0;
+  --color-azul: #3b82f6;
+  --color-azul-edge: #2563eb;
+  --color-subrayador: #fbbf24;
+  --color-subrayador-edge: #d4950a;
+  --color-aprobado: #10b981;
+  --color-aprobado-edge: #0a8f63;
   --color-rojo: #f0483e;
   --color-rojo-edge: #c22f27;
-  --color-papel: #f5f6fb;
-  --color-tinta: #1b1f3b;
+  --color-papel: #f4efff;
+  --color-tinta: #1e1a38;
 
   --radius-md: 0.625rem;
   --radius-lg: 0.875rem;
