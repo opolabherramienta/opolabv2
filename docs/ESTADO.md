@@ -209,7 +209,7 @@ que salga. Puntos sin verificar con datos reales:
 
 ### 7. Vídeo de presentación
 
-Primera versión hecha el 23 de noviembre (sin commit): 61,5 s, 1920×1080,
+Primera versión hecha el 23 de noviembre (commit `e06536d`, sin subir): 61,5 s, 1920×1080,
 voz de ElevenLabs ("Cristina", castellano neutro), música y efectos del catálogo de
 HyperFrames. Está en la portada, sección "OpoLab en un minuto"
 (`public/video/opolab-presentacion.mp4` y su `.jpg` de carátula). El proyecto
