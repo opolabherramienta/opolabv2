@@ -15,7 +15,7 @@ function load(file) {
   }).outputText;
   const exports = {};
   cache.set(full, exports);
-  vm.runInNewContext(js, { exports, Date, Math, Number, Map, Set, require(name) {
+  vm.runInNewContext(js, { exports, Date, Math, Number, Map, Set, Intl, require(name) {
     if (!name.startsWith('.')) throw new Error(`Unexpected dependency: ${name}`);
     return load(path.join(path.dirname(full), `${name}.ts`));
   }});
@@ -171,4 +171,100 @@ test('levels and session xp', () => {
   assert.equal(getSessionXp('study_topic', 'Repaso: Tema 3', 6), 15);
   assert.equal(getSessionXp('rest', 'Descanso', 9), 0);
   assert.equal(addDays('2026-12-30', 3), '2027-01-02');
+});
+
+test('recalculating keeps the spaced reviews of a topic studied in the calendar', () => {
+  const list = topics(3);
+  list[0].studied = true;
+  list[0].studiedOnKey = '2026-11-23';
+  const { tasks } = plan({ topics: list, busy: [{ dateKey: '2026-11-23', minutes: 60 }] });
+  const reviews = tasks.filter((task) => task.kind === 'review' && task.base_topic_id === 'b1');
+  assert.equal(
+    reviews.slice(0, 4).map((task) => daysBetween('2026-11-23', task.task_date)).join(),
+    '3,7,14,30',
+  );
+  assert.ok(reviews.length > 4, 'maintenance reviews follow the spaced ones');
+  assert.ok(daysBetween(reviews[3].task_date, reviews[4].task_date) >= 14);
+  // The topic studied today already fills this week's pace of one new topic.
+  const studies = tasks.filter((task) => task.kind === 'study');
+  assert.ok(studies.every((task) => task.task_date >= '2026-11-30'));
+  assert.ok(!tasks.some((task) => task.task_date === '2026-11-23'));
+});
+
+test('reviews already done are not planned again and overdue ones collapse into one', () => {
+  const list = topics(1, { studied: true, studiedOnKey: '2026-11-16', reviewsDone: 1 });
+  const done = plan({ topics: list }).tasks.filter((task) => task.kind === 'review');
+  assert.equal(
+    done.slice(0, 3).map((task) => daysBetween('2026-11-16', task.task_date)).join(),
+    '7,14,30',
+  );
+  const late = topics(1, { studied: true, studiedOnKey: '2026-10-01', reviewsDone: 0 });
+  const overdue = plan({ topics: late }).tasks.filter((task) => task.kind === 'review');
+  assert.equal(overdue[0].task_date, '2026-11-23');
+  assert.ok(overdue[0].description.startsWith('Repaso 4 de 4'));
+  assert.ok(daysBetween(overdue[0].task_date, overdue[1].task_date) >= 14);
+});
+
+test('sessions the plan keeps take up their day', () => {
+  const { tasks } = plan({ weeklyHours: 10, busy: [{ dateKey: '2026-11-24', minutes: 120 }] });
+  assert.ok(!tasks.some((task) => task.task_date === '2026-11-24'));
+});
+
+// "Hoy" screen
+const { buildTodayView, formatMinutes } = load('lib/study/today.ts');
+
+function todaySession(id, taskDate, overrides = {}) {
+  return {
+    id, title: `Tema ${id}`, description: '', taskDate, taskType: 'study_topic',
+    status: 'pending', completedAt: null, userTopicId: null, userPracticalId: null,
+    estimatedMinutes: 60, ...overrides,
+  };
+}
+
+test('hoy: separa lo de hoy, lo atrasado y lo de mañana', () => {
+  const view = buildTodayView([
+    todaySession('a', '2026-11-20'),
+    todaySession('b', '2026-11-22', { status: 'completed' }),
+    todaySession('c', '2026-11-23', { status: 'completed' }),
+    todaySession('d', '2026-11-23', { title: 'Repaso: Tema 1', estimatedMinutes: 30 }),
+    todaySession('e', '2026-11-23'),
+    todaySession('f', '2026-11-23', { status: 'cancelled' }),
+    todaySession('g', '2026-11-24'),
+    todaySession('h', '2026-11-25'),
+  ], '2026-11-23');
+
+  assert.equal(view.today.map((s) => s.id).join(), 'e,d,c');
+  assert.equal(view.overdue.map((s) => s.id).join(), 'a');
+  assert.equal(view.tomorrow.map((s) => s.id).join(), 'g');
+  assert.equal(view.doneCount, 1);
+  assert.equal(view.totalCount, 3);
+  assert.equal(view.minutesLeft, 90);
+});
+
+test('hoy: el descanso no cuenta como trabajo ni como atrasado', () => {
+  const view = buildTodayView([
+    todaySession('a', '2026-11-22', { taskType: 'rest', title: 'Descanso' }),
+    todaySession('b', '2026-11-23', { taskType: 'rest', title: 'Descanso' }),
+  ], '2026-11-23');
+
+  assert.equal(view.totalCount, 0);
+  assert.equal(view.overdue.length, 0);
+  assert.equal(view.rest.length, 1);
+  assert.equal(view.minutesLeft, null);
+});
+
+test('hoy: lo atrasado sale de más reciente a más antiguo', () => {
+  const view = buildTodayView([
+    todaySession('a', '2026-11-10'),
+    todaySession('b', '2026-11-21'),
+    todaySession('c', '2026-11-15'),
+  ], '2026-11-23');
+
+  assert.equal(view.overdue.map((s) => s.id).join(), 'b,c,a');
+});
+
+test('hoy: formato de minutos', () => {
+  assert.equal(formatMinutes(45), '45 min');
+  assert.equal(formatMinutes(60), '1 h');
+  assert.equal(formatMinutes(90), '1 h 30 min');
 });

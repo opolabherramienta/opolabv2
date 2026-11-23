@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const privatePaths = [
   "/onboarding",
   "/dashboard",
+  "/hoy",
   "/temas",
   "/practicos",
   "/calendario",
@@ -78,6 +79,7 @@ export const config = {
     "/register",
     "/onboarding/:path*",
     "/dashboard/:path*",
+    "/hoy/:path*",
     "/temas/:path*",
     "/practicos/:path*",
     "/calendario/:path*",

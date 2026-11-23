@@ -4,10 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   generateStudyPlan,
+  type PlanBusySlot,
   type PlanPractical,
   type PlanSummary,
   type PlanTopic,
 } from "@/lib/study/planner";
+import { loadCalendarTasks } from "@/lib/study/load";
+import { getSessionKind } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/server";
 
 export type PlanActionState = {
@@ -25,10 +28,31 @@ function asLevel(value: unknown): Level {
 
 // The exam calendar is Spanish: "today" is the date in mainland Spain,
 // whatever the server clock says.
+function getMadridKey(date: Date) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(date);
+}
+
 function getTodayKey() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(
-    new Date(),
-  );
+  return getMadridKey(new Date());
+}
+
+type KeptSession = {
+  title: string | null;
+  task_type: string | null;
+  task_date: string | null;
+  status: string | null;
+  completed_at: string | null;
+  user_topic_id: string | null;
+  estimated_duration_minutes: number | null;
+  is_auto_generated: boolean | null;
+};
+
+function completedOnKey(session: KeptSession) {
+  const completedAt = session.completed_at ? new Date(session.completed_at) : null;
+
+  return completedAt && !Number.isNaN(completedAt.getTime())
+    ? getMadridKey(completedAt)
+    : (session.task_date ?? "").slice(0, 10);
 }
 
 export async function generatePlanAction(
@@ -73,7 +97,7 @@ export async function generatePlanAction(
     redirect("/onboarding");
   }
 
-  const [baseTopicsResult, userTopicsResult, practicalsResult] = await Promise.all([
+  const [baseTopicsResult, userTopicsResult, practicalsResult, sessionsResult] = await Promise.all([
     supabase
       .from("base_topics")
       .select("id, topic_number, title")
@@ -84,9 +108,17 @@ export async function generatePlanAction(
       .select("id, base_topic_id, is_selected, studied_done, priority_level, mastery_level")
       .eq("user_id", user.id),
     supabase.from("user_practicals").select("id, name, status").eq("user_id", user.id),
+    loadCalendarTasks<KeptSession>(
+      supabase,
+      user.id,
+      "title, task_type, task_date, status, completed_at, user_topic_id, estimated_duration_minutes, is_auto_generated",
+    ),
   ]);
   const loadError =
-    baseTopicsResult.error ?? userTopicsResult.error ?? practicalsResult.error;
+    baseTopicsResult.error ??
+    userTopicsResult.error ??
+    practicalsResult.error ??
+    sessionsResult.error;
 
   if (loadError) {
     return {
@@ -104,6 +136,58 @@ export async function generatePlanAction(
       }>
     ).map((topic) => [topic.id, topic]),
   );
+  const todayKey = getTodayKey();
+  const sessions = sessionsResult.data ?? [];
+
+  // When each topic was studied in the calendar and the reviews done since,
+  // so a new plan keeps the spaced reviews that are still owed.
+  const studiedOn = new Map<string, string>();
+
+  for (const session of sessions) {
+    if (
+      session.status === "completed" &&
+      session.user_topic_id &&
+      getSessionKind(session.task_type, session.title) === "study"
+    ) {
+      const key = completedOnKey(session);
+
+      if (key && key > (studiedOn.get(session.user_topic_id) ?? "")) {
+        studiedOn.set(session.user_topic_id, key);
+      }
+    }
+  }
+
+  const reviewsDone = new Map<string, number>();
+
+  for (const session of sessions) {
+    const since = session.user_topic_id ? studiedOn.get(session.user_topic_id) : undefined;
+
+    if (
+      since &&
+      session.user_topic_id &&
+      session.status === "completed" &&
+      getSessionKind(session.task_type, session.title) === "review" &&
+      completedOnKey(session) >= since
+    ) {
+      reviewsDone.set(session.user_topic_id, (reviewsDone.get(session.user_topic_id) ?? 0) + 1);
+    }
+  }
+
+  // Everything the new plan will not replace still takes up its day.
+  const busy: PlanBusySlot[] = sessions
+    .filter(
+      (session) =>
+        session.task_date !== null &&
+        session.task_date.slice(0, 10) >= todayKey &&
+        session.task_type !== "rest" &&
+        session.status !== "cancelled" &&
+        !(session.is_auto_generated === true && session.status === "pending"),
+    )
+    .map((session) => ({
+      dateKey: (session.task_date as string).slice(0, 10),
+      minutes: session.estimated_duration_minutes ?? 0,
+    }));
+
   const topics: PlanTopic[] = (
     (userTopicsResult.data ?? []) as Array<{
       id: string;
@@ -126,6 +210,8 @@ export async function generatePlanAction(
         studied: topic.studied_done === true,
         priority: asLevel(topic.priority_level),
         mastery: asLevel(topic.mastery_level),
+        studiedOnKey: studiedOn.get(topic.id) ?? null,
+        reviewsDone: reviewsDone.get(topic.id) ?? 0,
       };
     });
   const practicals: PlanPractical[] = (
@@ -150,7 +236,6 @@ export async function generatePlanAction(
     };
   }
 
-  const todayKey = getTodayKey();
   const plan = generateStudyPlan({
     todayKey,
     examDateKey: profile.opposition_date ? profile.opposition_date.slice(0, 10) : null,
@@ -160,6 +245,7 @@ export async function generatePlanAction(
     practicalMinutes: profile.default_practical_duration_minutes ?? 90,
     topics,
     practicals,
+    busy,
   });
 
   if (plan.summary.reason === "no-days") {
@@ -183,15 +269,15 @@ export async function generatePlanAction(
     };
   }
 
-  // Replace only what an earlier plan left pending. Sessions the user wrote
-  // by hand, and anything already completed or cancelled, stay untouched.
+  // Replace only what an earlier plan left pending, overdue sessions included:
+  // the new plan schedules that work again. Sessions the user wrote by hand,
+  // and anything already completed or cancelled, stay untouched.
   const deleteResult = await supabase
     .from("calendar_tasks")
     .delete()
     .eq("user_id", user.id)
     .eq("is_auto_generated", true)
-    .eq("status", "pending")
-    .gte("task_date", todayKey);
+    .eq("status", "pending");
 
   if (deleteResult.error) {
     return {
@@ -229,6 +315,7 @@ export async function generatePlanAction(
 
   revalidatePath("/calendario");
   revalidatePath("/dashboard");
+  revalidatePath("/hoy");
   revalidatePath("/progreso");
 
   return { error: "", summary: plan.summary };

@@ -37,6 +37,14 @@ export function toDateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+const madridFormat = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" });
+
+// The exam calendar is Spanish: every "which day is it" question is answered
+// in mainland Spain time, on the server and in the browser alike.
+export function madridDateKey(date: Date = new Date()) {
+  return madridFormat.format(date);
+}
+
 export function dateFromKey(key: string) {
   const [year, month, day] = key.slice(0, 10).split("-").map(Number);
 

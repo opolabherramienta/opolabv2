@@ -61,6 +61,10 @@ export default async function PracticosPage() {
     .select("specialty_id, onboarding_completed")
     .eq("user_id", user.id)
     .maybeSingle();
+  if (profileResult.error) {
+    throw new Error("No se pudo cargar tu perfil.");
+  }
+
   const profile = profileResult.data as UserOppositionProfile | null;
 
   if (!profile || profile.onboarding_completed === false) {

@@ -1,4 +1,11 @@
-import { daysBetween, getSessionKind, toDateKey, type SessionKind } from "./sessions";
+import {
+  addDays,
+  dateFromKey,
+  daysBetween,
+  getSessionKind,
+  madridDateKey,
+  type SessionKind,
+} from "./sessions";
 
 // Rules carried over from the first OpoLab planner. Everything is derived from
 // the completed calendar sessions, so there is no separate score to keep in sync.
@@ -77,25 +84,22 @@ function getCompletionDayKey(session: CompletedSession) {
   if (session.completedAt) {
     const date = new Date(session.completedAt);
 
-    if (!Number.isNaN(date.getTime())) return toDateKey(date);
+    if (!Number.isNaN(date.getTime())) return madridDateKey(date);
   }
 
   return session.taskDate ? session.taskDate.slice(0, 10) : null;
 }
 
-function getWeekStartKey(today: Date) {
-  const start = new Date(today);
-  start.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-
-  return toDateKey(start);
+function getWeekStartKey(todayKey: string) {
+  return addDays(todayKey, -((dateFromKey(todayKey).getDay() + 6) % 7));
 }
 
 export function summarizeGame(
   sessions: CompletedSession[],
-  today: Date = new Date(),
+  today: Date | string = new Date(),
 ): GameSummary {
-  const todayKey = toDateKey(today);
-  const weekStartKey = getWeekStartKey(today);
+  const todayKey = typeof today === "string" ? today.slice(0, 10) : madridDateKey(today);
+  const weekStartKey = getWeekStartKey(todayKey);
   const completed = sessions
     .filter((session) => session.status === "completed")
     .map((session) => ({
@@ -152,7 +156,30 @@ export function summarizeGame(
   };
 }
 
-/** XP a session is worth right now, for the "+XP" shown when completing it. */
+/**
+ * XP the user gains by completing `session` right now: the difference in the
+ * total, so it includes the streak bonus on the day the streak reaches it.
+ */
+export function getCompletionXp(
+  sessions: Array<CompletedSession & { id?: string }>,
+  session: CompletedSession & { id?: string },
+  now: Date = new Date(),
+) {
+  const before = summarizeGame(sessions, now).xpTotal;
+  const completed = { ...session, status: "completed", completedAt: now.toISOString() };
+  const after = summarizeGame(
+    sessions.some((item) => item === session || (item.id && item.id === session.id))
+      ? sessions.map((item) =>
+          item === session || (item.id && item.id === session.id) ? completed : item,
+        )
+      : [...sessions, completed],
+    now,
+  ).xpTotal;
+
+  return Math.max(0, after - before);
+}
+
+/** Base XP of a session at a given streak. Prefer getCompletionXp for the "+XP" pop. */
 export function getSessionXp(
   taskType: string | null,
   title: string | null,

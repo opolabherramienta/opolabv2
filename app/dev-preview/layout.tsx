@@ -4,6 +4,7 @@ import { Sidebar, type SidebarItem } from "@/components/layout/Sidebar";
 // Design previews with made-up data. Never served in production.
 const items: SidebarItem[] = [
   { href: "/dev-preview/inicio", label: "Inicio", icon: "home" },
+  { href: "/dev-preview/hoy", label: "Hoy", icon: "check" },
   { href: "/dev-preview/temas", label: "Temas", icon: "balls" },
   { href: "/dev-preview/practicos", label: "Prácticos", icon: "flask" },
   { href: "/dev-preview/calendario", label: "Calendario", icon: "calendar", shortLabel: "Agenda" },

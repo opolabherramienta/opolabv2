@@ -36,6 +36,16 @@ export type PlanTopic = {
   studied: boolean;
   priority: "low" | "medium" | "high";
   mastery: "low" | "medium" | "high";
+  /** Day the topic was studied in the calendar, when known. */
+  studiedOnKey?: string | null;
+  /** Reviews already completed since that day. */
+  reviewsDone?: number;
+};
+
+/** Time already taken by sessions the plan must leave alone. */
+export type PlanBusySlot = {
+  dateKey: string;
+  minutes: number;
 };
 
 export type PlanPractical = {
@@ -54,6 +64,8 @@ export type PlanInput = {
   /** Only the topics the user has chosen to prepare. */
   topics: PlanTopic[];
   practicals: PlanPractical[];
+  /** Completed and hand-written sessions from today on: the plan fits around them. */
+  busy?: PlanBusySlot[];
   maxWeeks?: number;
 };
 
@@ -178,6 +190,13 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
   const used = new Map(days.map((key) => [key, 0]));
   const tasks: PlannedTask[] = [];
 
+  for (const slot of input.busy ?? []) {
+    if (remaining.has(slot.dateKey)) {
+      remaining.set(slot.dateKey, (remaining.get(slot.dateKey) ?? 0) - Math.max(0, slot.minutes));
+      used.set(slot.dateKey, (used.get(slot.dateKey) ?? 0) + 1);
+    }
+  }
+
   // Weeks run Monday to Sunday, counted from the week of today.
   const today = dateFromKey(todayKey);
   const firstMondayKey = addDays(todayKey, -((today.getDay() + 6) % 7));
@@ -257,6 +276,14 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
   const maintenanceQueue = studiedPool.filter((topic) => topic.mastery !== "high");
   const lastMaintenance = new Map<string, string>();
   const newPerWeek = new Map<number, number>();
+
+  // Topics already studied this week count towards this week's pace, so
+  // recalculating does not pile a second new topic on top of them.
+  for (const topic of studiedPool) {
+    if (topic.studiedOnKey && topic.studiedOnKey >= firstMondayKey && topic.studiedOnKey <= todayKey) {
+      newPerWeek.set(0, (newPerWeek.get(0) ?? 0) + 1);
+    }
+  }
   let practicalIndex = 0;
   let simulationIndex = 0;
   let maintenanceIndex = 0;
@@ -292,6 +319,53 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
       simulationHold.add(lastDay);
       remaining.set(lastDay, (remaining.get(lastDay) ?? 0) - simulationMinutes);
     }
+  }
+
+  // Topics studied through the calendar keep the spaced reviews they still
+  // owe. Reviews whose day has passed collapse into a single catch-up.
+  const owedReviews = studiedPool
+    .filter((topic) => topic.studiedOnKey)
+    .sort((a, b) => (a.studiedOnKey as string).localeCompare(b.studiedOnKey as string));
+
+  for (const topic of owedReviews) {
+    const studiedOnKey = topic.studiedOnKey as string;
+    const targets: Array<{ index: number; key: string }> = [];
+
+    for (let index = Math.max(0, topic.reviewsDone ?? 0); index < REVIEW_OFFSETS.length; index++) {
+      const dueKey = addDays(studiedOnKey, REVIEW_OFFSETS[index]);
+
+      if (dueKey >= todayKey) {
+        targets.push({ index, key: dueKey });
+      } else {
+        // Overdue: only the latest one is kept, to be done as soon as possible.
+        targets.splice(0, targets.length, { index, key: todayKey });
+      }
+    }
+
+    let lastKey: string | null = null;
+
+    for (const target of targets) {
+      const fromKey: string =
+        lastKey && addDays(lastKey, 1) > target.key ? addDays(lastKey, 1) : target.key;
+      const reviewKey = firstFit(fromKey, reviewMinutes);
+
+      if (reviewKey) {
+        lastKey = reviewKey;
+        place(
+          reviewKey,
+          reviewTask(
+            topic,
+            `Repaso ${target.index + 1} de ${REVIEW_OFFSETS.length}: recita el índice sin mirar y comprueba.`,
+          ),
+        );
+      }
+    }
+
+    // Maintenance reviews start two weeks after the last spaced one.
+    lastMaintenance.set(
+      topic.baseTopicId,
+      lastKey ?? (studiedOnKey > todayKey ? todayKey : studiedOnKey),
+    );
   }
 
   for (const key of days) {

@@ -1,6 +1,8 @@
 import { CalendarClient, type CalendarSession } from "@/components/calendar/calendar-client";
 import { GeneratePlanCard } from "@/components/plan/GeneratePlanCard";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { loadCalendarTasks, needsOnboarding } from "@/lib/study/load";
+import { madridDateKey } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -78,18 +80,16 @@ export default async function CalendarioPage() {
     .maybeSingle();
   const profile = profileResult.data as UserOppositionProfile | null;
 
-  if (!profile || profile.onboarding_completed === false) {
+  if (needsOnboarding({ data: profile, error: profileResult.error })) {
     redirect("/onboarding");
   }
 
-  const tasksResult = await supabase
-    .from("calendar_tasks")
-    .select(
-      "id, title, description, task_date, task_type, status, completed_at, created_at, user_topic_id, user_practical_id, estimated_duration_minutes, is_auto_generated",
-    )
-    .eq("user_id", user.id)
-    .order("task_date", { ascending: true });
-  const tasks = (tasksResult.data ?? []) as CalendarTask[];
+  const tasksResult = await loadCalendarTasks<CalendarTask>(
+    supabase,
+    user.id,
+    "id, title, description, task_date, task_type, status, completed_at, created_at, user_topic_id, user_practical_id, estimated_duration_minutes, is_auto_generated",
+  );
+  const tasks = tasksResult.data ?? [];
   const sessions: CalendarSession[] = tasks.map((task) => ({
     id: task.id,
     title: task.title,
@@ -103,9 +103,7 @@ export default async function CalendarioPage() {
     userPracticalId: task.user_practical_id,
     estimatedMinutes: task.estimated_duration_minutes,
   }));
-  const todayKey = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Madrid",
-  }).format(new Date());
+  const todayKey = madridDateKey();
   const hasPlan = tasks.some(
     (task) =>
       task.is_auto_generated === true &&

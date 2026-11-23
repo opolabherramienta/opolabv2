@@ -298,9 +298,15 @@ export function DashboardView({
             <h2 className="text-xl font-extrabold text-slate-950">
               Lo siguiente
             </h2>
-            <Link className="text-sm font-bold text-violet-700" href="/calendario">
-              Calendario
-            </Link>
+            {upcomingTasks.some((task) => task.isToday) ? (
+              <Link className="text-sm font-bold text-violet-700" href="/hoy">
+                Ir a hoy
+              </Link>
+            ) : (
+              <Link className="text-sm font-bold text-violet-700" href="/calendario">
+                Calendario
+              </Link>
+            )}
           </div>
 
           {upcomingTasks.length === 0 ? (

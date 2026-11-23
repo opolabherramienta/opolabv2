@@ -7,7 +7,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { fieldClasses } from "@/components/ui/Input";
 import { Chip } from "@/components/ui/Progress";
 import { getSessionXp, summarizeGame } from "@/lib/study/gamification";
-import { getSessionKind, toDateKey as toLocalDateKey } from "@/lib/study/sessions";
+import { syncSessionProgress } from "@/lib/study/progress-sync";
 import { createClient } from "@/lib/supabase/client";
 
 type CalendarTaskType = "study_topic" | "practical" | "rest";
@@ -588,83 +588,8 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
   // Completing a planned session also moves the topic or practical forward,
   // and undoing it moves it back. A failure here never blocks the calendar.
   async function syncProgress(session: CalendarSession, direction: 1 | -1) {
-    const kind = getSessionKind(session.taskType, session.title);
-    const todayKey = toLocalDateKey(new Date());
-
     try {
-      if (session.userTopicId && kind !== "practical" && kind !== "rest") {
-        const current = await supabase
-          .from("user_topics")
-          .select("review_count, simulation_count")
-          .eq("id", session.userTopicId)
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        if (current.error || !current.data) {
-          throw new Error(current.error?.message ?? "Tema no encontrado");
-        }
-
-        const row = current.data as {
-          review_count: number | null;
-          simulation_count: number | null;
-        };
-        const patch: Record<string, unknown> =
-          kind === "study"
-            ? { studied_done: direction > 0 }
-            : kind === "review"
-              ? {
-                  review_count: Math.max(0, (row.review_count ?? 0) + direction),
-                  ...(direction > 0 ? { last_review_date: todayKey } : {}),
-                }
-              : {
-                  simulation_count: Math.max(
-                    0,
-                    (row.simulation_count ?? 0) + direction,
-                  ),
-                };
-        const result = await supabase
-          .from("user_topics")
-          .update(patch)
-          .eq("id", session.userTopicId)
-          .eq("user_id", userId);
-
-        if (result.error) {
-          throw new Error(result.error.message);
-        }
-      }
-
-      if (session.userPracticalId && kind === "practical") {
-        const current = await supabase
-          .from("user_practicals")
-          .select("times_worked, status")
-          .eq("id", session.userPracticalId)
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        if (current.error || !current.data) {
-          throw new Error(current.error?.message ?? "Práctico no encontrado");
-        }
-
-        const row = current.data as {
-          times_worked: number | null;
-          status: string | null;
-        };
-        const result = await supabase
-          .from("user_practicals")
-          .update({
-            times_worked: Math.max(0, (row.times_worked ?? 0) + direction),
-            ...(direction > 0 && row.status === "not_started"
-              ? { status: "worked" }
-              : {}),
-            ...(direction > 0 ? { last_worked_date: todayKey } : {}),
-          })
-          .eq("id", session.userPracticalId)
-          .eq("user_id", userId);
-
-        if (result.error) {
-          throw new Error(result.error.message);
-        }
-      }
+      await syncSessionProgress(supabase, userId, session, direction);
     } catch (syncError) {
       console.error("Error actualizando el progreso:", syncError);
       setError(

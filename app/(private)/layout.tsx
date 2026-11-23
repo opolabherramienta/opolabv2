@@ -3,6 +3,7 @@ import { Sidebar, type SidebarItem } from "@/components/layout/Sidebar";
 
 const privateItems: SidebarItem[] = [
   { href: "/dashboard", label: "Inicio", icon: "home" },
+  { href: "/hoy", label: "Hoy", icon: "check" },
   { href: "/temas", label: "Temas", icon: "balls" },
   { href: "/practicos", label: "Prácticos", icon: "flask" },
   { href: "/calendario", label: "Calendario", icon: "calendar", shortLabel: "Agenda" },

@@ -1,4 +1,6 @@
 import { ProgressView } from "@/components/progress/progress-view";
+import { loadCalendarTasks } from "@/lib/study/load";
+import { madridDateKey } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -21,6 +23,7 @@ type UserOppositionProfile = {
 
 type UserTopic = {
   id: string;
+  base_topic_id: string;
   is_selected: boolean | null;
   summary_done: boolean | null;
   studied_done: boolean | null;
@@ -70,14 +73,6 @@ function normalizeDateKey(value: string | null) {
   return value ? value.slice(0, 10) : "";
 }
 
-function getTodayKey() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
 
 function formatDate(value: string | null) {
   const dateKey = normalizeDateKey(value);
@@ -106,7 +101,7 @@ function buildRecommendations(
   },
   tasks: {
     total: number;
-    pending: number;
+    overdue: number;
   },
 ) {
   const recommendations: string[] = [];
@@ -131,8 +126,10 @@ function buildRecommendations(
     recommendations.push("Crea una rutina mínima de prácticos esta semana.");
   }
 
-  if (tasks.pending >= 5) {
-    recommendations.push("Revisa tu calendario: tienes varias sesiones pendientes.");
+  if (tasks.overdue >= 5) {
+    recommendations.push(
+      "Tienes varias sesiones atrasadas. Recalcula el plan desde el calendario para repartirlas.",
+    );
   }
 
   if (recommendations.length === 0) {
@@ -173,6 +170,7 @@ export default async function ProgresoPage() {
         .select(
           [
             "id",
+            "base_topic_id",
             "is_selected",
             "summary_done",
             "studied_done",
@@ -187,11 +185,16 @@ export default async function ProgresoPage() {
         .from("user_practicals")
         .select("id, status, times_worked")
         .eq("user_id", user.id),
-      supabase
-        .from("calendar_tasks")
-        .select("id, title, task_date, task_type, status")
-        .eq("user_id", user.id),
+      loadCalendarTasks<CalendarTask>(
+        supabase,
+        user.id,
+        "id, title, task_date, task_type, status",
+      ),
     ]);
+
+  if (profileResult.error) {
+    throw new Error("No se pudo cargar tu perfil.");
+  }
 
   const profile = profileResult.data as UserOppositionProfile | null;
 
@@ -199,11 +202,33 @@ export default async function ProgresoPage() {
     redirect("/onboarding");
   }
 
-  const topics = (topicsResult.data ?? []) as unknown as UserTopic[];
+  // Only the syllabus of the current specialty counts, and within it only
+  // the topics the user has chosen to prepare.
+  const baseTopicsResult = profile.specialty_id
+    ? await supabase
+        .from("base_topics")
+        .select("id")
+        .eq("specialty_id", profile.specialty_id)
+        .eq("is_active", true)
+    : { data: [], error: null };
+  const currentTopicIds = new Set(
+    ((baseTopicsResult.data ?? []) as Array<{ id: string }>).map((topic) => topic.id),
+  );
+  const topics = ((topicsResult.data ?? []) as unknown as UserTopic[]).filter(
+    (topic) => currentTopicIds.has(topic.base_topic_id) && topic.is_selected === true,
+  );
   const practicals = (practicalsResult.data ?? []) as unknown as UserPractical[];
-  const tasks = (tasksResult.data ?? []) as unknown as CalendarTask[];
+  const allTasks = tasksResult.data ?? [];
+  const todayKey = madridDateKey();
+  // Sessions that were due by today, plus anything done ahead of time. The
+  // rest of the plan is still to come and must not drag the percentage down.
+  const tasks = allTasks.filter(
+    (task) =>
+      task.status === "completed" ||
+      (task.status !== "cancelled" && normalizeDateKey(task.task_date) <= todayKey),
+  );
   const loadError = getLoadError([
-    profileResult.error,
+    baseTopicsResult.error,
     topicsResult.error,
     practicalsResult.error,
     tasksResult.error,
@@ -232,13 +257,12 @@ export default async function ProgresoPage() {
     total: tasks.length,
     pending: tasks.filter((task) => task.status === "pending").length,
     completed: tasks.filter((task) => task.status === "completed").length,
-    cancelled: tasks.filter((task) => task.status === "cancelled").length,
+    cancelled: allTasks.filter((task) => task.status === "cancelled").length,
     studyTopic: tasks.filter((task) => task.task_type === "study_topic").length,
     practical: tasks.filter((task) => task.task_type === "practical").length,
     rest: tasks.filter((task) => task.task_type === "rest").length,
   };
-  const todayKey = getTodayKey();
-  const nextPendingTask = tasks
+  const nextPendingTask = allTasks
     .filter(
       (task) =>
         task.status === "pending" && normalizeDateKey(task.task_date) >= todayKey,
@@ -257,7 +281,13 @@ export default async function ProgresoPage() {
     (topicStudiedPercent + topicSummaryPercent + practicalMasteredPercent + completedTasksPercent) /
       4,
   );
-  const recommendations = buildRecommendations(topicStats, practicalStats, taskStats);
+  const recommendations = buildRecommendations(topicStats, practicalStats, {
+    total: allTasks.length,
+    overdue: tasks.filter(
+      (task) =>
+        task.status === "pending" && normalizeDateKey(task.task_date) < todayKey,
+    ).length,
+  });
 
   return (
     <ProgressView

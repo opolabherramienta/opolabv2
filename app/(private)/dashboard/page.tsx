@@ -5,6 +5,8 @@ import {
 } from "@/components/dashboard/dashboard-view";
 import { getTopicBallState } from "@/components/ui/Ball";
 import { summarizeGame } from "@/lib/study/gamification";
+import { loadCalendarTasks } from "@/lib/study/load";
+import { madridDateKey } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -177,10 +179,11 @@ export default async function DashboardPage() {
       .from("user_practicals")
       .select("status, times_worked")
       .eq("user_id", user.id),
-    supabase
-      .from("calendar_tasks")
-      .select("id, title, task_date, task_type, status, completed_at, is_auto_generated")
-      .eq("user_id", user.id),
+    loadCalendarTasks<CalendarTask>(
+      supabase,
+      user.id,
+      "id, title, task_date, task_type, status, completed_at, is_auto_generated",
+    ),
   ]);
 
   const firstError = [
@@ -198,11 +201,10 @@ export default async function DashboardPage() {
   const baseTopics = (baseTopicsResult.data ?? []) as BaseTopic[];
   const userTopics = (topicsResult.data ?? []) as UserTopic[];
   const practicals = (practicalsResult.data ?? []) as UserPractical[];
-  const tasks = (tasksResult.data ?? []) as CalendarTask[];
+  const tasks = tasksResult.data ?? [];
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayKey = toDateKey(today);
+  const todayKey = madridDateKey();
+  const today = dateFromKey(todayKey);
   const week = getWeekKeys(today);
 
   // Only topics of the current specialty count.
@@ -279,7 +281,7 @@ export default async function DashboardPage() {
           completedAt: task.completed_at,
           taskDate: task.task_date,
         })),
-        today,
+        todayKey,
       )}
       hasPlan={tasks.some(
         (task) =>
