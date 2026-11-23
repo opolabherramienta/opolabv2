@@ -1,7 +1,9 @@
+import { requireAdmin } from "@/lib/auth/authorization";
 ﻿import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export default function AdminSugerenciasPage() {
+export default async function AdminSugerenciasPage() {
+  await requireAdmin();
   return (
     <div className="space-y-8">
       <PageHeader

@@ -5,7 +5,7 @@ export function LogoutButton() {
   return (
     <form action={signOutAction}>
       <Button className="w-full" type="submit" variant="secondary">
-        Cerrar sesion
+        Cerrar sesión
       </Button>
     </form>
   );

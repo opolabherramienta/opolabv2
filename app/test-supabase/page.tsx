@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth/authorization";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -80,6 +81,7 @@ function DataSection({ result }: { result: QueryResult }) {
 }
 
 export default async function TestSupabasePage() {
+  await requireAdmin();
   const supabase = await createClient();
 
   const results = await Promise.all(

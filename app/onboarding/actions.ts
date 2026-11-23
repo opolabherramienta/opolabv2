@@ -28,10 +28,7 @@ function getRequiredNumber(formData: FormData, field: string) {
   return value;
 }
 
-export async function saveOnboardingAction(
-  _prevState: OnboardingActionState,
-  formData: FormData,
-) {
+async function saveOppositionProfile(formData: FormData, destination: string) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -113,5 +110,19 @@ export async function saveOnboardingAction(
     return { error: `No se pudo guardar el onboarding: ${error.message}` };
   }
 
-  redirect("/dashboard");
+  redirect(destination);
+}
+
+export async function saveOnboardingAction(
+  _prevState: OnboardingActionState,
+  formData: FormData,
+) {
+  return saveOppositionProfile(formData, "/dashboard");
+}
+
+export async function saveSettingsAction(
+  _prevState: OnboardingActionState,
+  formData: FormData,
+) {
+  return saveOppositionProfile(formData, "/ajustes?guardado=1");
 }

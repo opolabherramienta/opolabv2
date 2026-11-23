@@ -20,7 +20,7 @@ export default async function RegisterPage() {
       <Card className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-slate-950">Crear cuenta</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Crea tu cuenta para empezar a planificar tu oposicion.
+          Crea tu cuenta para empezar a planificar tu oposición.
         </p>
         <RegisterForm />
       </Card>

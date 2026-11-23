@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, type ReactNode } from "react";
-import { saveOnboardingAction } from "@/app/onboarding/actions";
+import { saveOnboardingAction, saveSettingsAction } from "@/app/onboarding/actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -25,6 +25,7 @@ type UserOppositionProfile = {
 type OnboardingFormProps = {
   autonomousCommunities: CatalogOption[];
   educationStages: CatalogOption[];
+  mode?: "onboarding" | "settings";
   profile: UserOppositionProfile | null;
   specialties: CatalogOption[];
 };
@@ -36,10 +37,10 @@ const initialState = {
 const dayOptions = [
   { value: "monday", label: "Lunes" },
   { value: "tuesday", label: "Martes" },
-  { value: "wednesday", label: "Miercoles" },
+  { value: "wednesday", label: "Miércoles" },
   { value: "thursday", label: "Jueves" },
   { value: "friday", label: "Viernes" },
-  { value: "saturday", label: "Sabado" },
+  { value: "saturday", label: "Sábado" },
   { value: "sunday", label: "Domingo" },
 ];
 
@@ -74,7 +75,7 @@ function SelectField({
         name={name}
         required
       >
-        <option value="">Selecciona una opcion</option>
+        <option value="">Selecciona una opción</option>
         {children}
       </select>
     </label>
@@ -84,11 +85,12 @@ function SelectField({
 export function OnboardingForm({
   autonomousCommunities,
   educationStages,
+  mode = "onboarding",
   profile,
   specialties,
 }: OnboardingFormProps) {
   const [state, formAction, pending] = useActionState(
-    saveOnboardingAction,
+    mode === "settings" ? saveSettingsAction : saveOnboardingAction,
     initialState,
   );
   const selectedDays = new Set(profile?.available_days ?? []);
@@ -125,7 +127,7 @@ export function OnboardingForm({
         <SelectField
           defaultValue={profile?.autonomous_community_id ?? ""}
           id="autonomous_community_id"
-          label="Comunidad autonoma"
+          label="Comunidad autónoma"
           name="autonomous_community_id"
         >
           {autonomousCommunities.map((community) => (
@@ -140,7 +142,7 @@ export function OnboardingForm({
         <Input
           defaultValue={profile?.opposition_date ?? ""}
           id="opposition_date"
-          label="Fecha de oposicion"
+          label="Fecha de oposición"
           name="opposition_date"
           required
           type="date"
@@ -170,7 +172,7 @@ export function OnboardingForm({
 
       <fieldset className="grid gap-3">
         <legend className="text-sm font-medium text-slate-700">
-          Dias disponibles
+          Días disponibles
         </legend>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {dayOptions.map((day) => (
@@ -195,7 +197,7 @@ export function OnboardingForm({
         <Input
           defaultValue={profile?.default_topic_duration_minutes ?? 60}
           id="default_topic_duration_minutes"
-          label="Tiempo por defecto para tema"
+          label="Tiempo por defecto para tema (minutos)"
           min={1}
           name="default_topic_duration_minutes"
           required
@@ -204,7 +206,7 @@ export function OnboardingForm({
         <Input
           defaultValue={profile?.default_practical_duration_minutes ?? 90}
           id="default_practical_duration_minutes"
-          label="Tiempo por defecto para practico"
+          label="Tiempo por defecto para práctico (minutos)"
           min={1}
           name="default_practical_duration_minutes"
           required
@@ -220,7 +222,11 @@ export function OnboardingForm({
 
       <div className="flex justify-end">
         <Button disabled={pending} type="submit">
-          {pending ? "Guardando..." : "Guardar y continuar"}
+          {pending
+            ? "Guardando..."
+            : mode === "settings"
+              ? "Guardar cambios"
+              : "Guardar y continuar"}
         </Button>
       </div>
     </form>

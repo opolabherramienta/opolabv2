@@ -5,7 +5,7 @@ import { signUpAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-const initialState = {
+const initialState: { error: string; message?: string } = {
   error: "",
 };
 
@@ -34,16 +34,21 @@ export function RegisterForm() {
       />
       <Input
         id="password"
-        label="Contrasena"
+        label="Contraseña"
         minLength={6}
         name="password"
-        placeholder="Elige una contrasena"
+        placeholder="Elige una contraseña"
         required
         type="password"
       />
       {state.error ? (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.error}
+        </p>
+      ) : null}
+      {state.message ? (
+        <p role="status" className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
+          {state.message}
         </p>
       ) : null}
       <Button className="mt-2 w-full" disabled={pending} type="submit">

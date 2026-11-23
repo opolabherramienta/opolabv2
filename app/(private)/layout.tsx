@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 const privateItems = [
   { href: "/dashboard", label: "Inicio" },
   { href: "/temas", label: "Temas" },
-  { href: "/practicos", label: "Practicos" },
+  { href: "/practicos", label: "Prácticos" },
   { href: "/calendario", label: "Calendario" },
   { href: "/progreso", label: "Progreso" },
   { href: "/sugerencias", label: "Sugerencias" },
@@ -23,7 +23,7 @@ export default function PrivateLayout({
         items={privateItems}
         productName="Opolab Planner"
       />
-      <main className="flex-1 px-6 py-8 lg:px-10">{children}</main>
+      <main className="flex-1 min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">{children}</main>
     </div>
   );
 }

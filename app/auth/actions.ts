@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 
 type AuthActionState = {
   error: string;
+  message?: string;
 };
 
 function getRequiredString(formData: FormData, field: string) {
@@ -20,10 +21,11 @@ function getRequiredString(formData: FormData, field: string) {
 export async function signUpAction(
   _prevState: AuthActionState,
   formData: FormData,
-) {
+): Promise<AuthActionState> {
   const fullName = getRequiredString(formData, "full_name");
   const email = getRequiredString(formData, "email").toLowerCase();
-  const password = getRequiredString(formData, "password");
+  const passwordValue = formData.get("password");
+  const password = typeof passwordValue === "string" ? passwordValue : "";
 
   if (!fullName || !email || !password) {
     return { error: "Completa nombre, email y contrasena." };
@@ -49,19 +51,12 @@ export async function signUpAction(
     return { error: "No se pudo crear la cuenta. Intentalo de nuevo." };
   }
 
-  const { error: profileError } = await supabase.from("profiles").upsert(
-    {
-      id: data.user.id,
-      full_name: fullName,
-      email,
-      role: "user",
-    },
-    { onConflict: "id" },
-  );
-
-  if (profileError) {
+  // Profile creation belongs to the Auth database trigger, including when
+  // email confirmation is enabled and signUp returns no authenticated session.
+  if (!data.session) {
     return {
-      error: `Cuenta creada, pero fallo el perfil: ${profileError.message}`,
+      error: "",
+      message: "Revisa tu correo para confirmar la cuenta. Después podrás iniciar sesión.",
     };
   }
 
@@ -73,7 +68,8 @@ export async function signInAction(
   formData: FormData,
 ) {
   const email = getRequiredString(formData, "email").toLowerCase();
-  const password = getRequiredString(formData, "password");
+  const passwordValue = formData.get("password");
+  const password = typeof passwordValue === "string" ? passwordValue : "";
 
   if (!email || !password) {
     return { error: "Introduce email y contrasena." };
