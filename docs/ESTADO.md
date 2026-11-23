@@ -44,7 +44,11 @@ comunidades puede esperar, igual que el resto de especialidades.
 Comprobaciones: `npm test`, `npm run lint`, `npm run typecheck`,
 `npm run build`.
 
-## Sin subir a GitHub
+## Subido el 23 de noviembre (commit `ebcff9f`)
+
+Todo lo de esta sección y la siguiente está ya en GitHub, en `opolab-v2`.
+Donde diga "sin subir" o "falta el commit", ya no aplica; lo que sigue
+faltando es probarlo en la app con una cuenta real.
 
 Arreglo del recálculo del plan en `lib/study/planner.ts`,
 `app/plan/actions.ts` y `tests/logic/study.test.mjs`: antes, al recalcular,
