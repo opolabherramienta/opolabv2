@@ -24,36 +24,8 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 
 - Claude: pantalla `/admin/lista-espera` (bloque 1) y, después, los arreglos
   del planificador (bloque 2). Dani dio el sí a ese orden el 24 de noviembre.
-- Correo de bienvenida (24 de noviembre): Dani ya tiene cuenta de Resend
-  (entra con GitHub, cuenta de opolabherramienta@gmail.com). El código está
-  escrito y subido. Para que salga el primer correo faltan, por orden:
-  1. Hecho: `opolab.net` añadido en Resend, región Irlanda (eu-west-1).
-  2. Hecho el 24 de noviembre: los cuatro registros están en Namecheap
-     (Advanced DNS; el DNS está allí, `registrar-servers.com`) y resuelven
-     desde fuera. Resend los estaba verificando a las 18:55 ("DNS
-     verified", dominio todavía en "Pending"): mirar en Resend > Domains
-     que pase a "Verified" antes de la prueba.
-     - TXT `resend._domainkey`: la clave DKIM (`p=MIGfMA0G...`).
-     - CNAME `rsend` a `rsend-euw1.forge.rmta.net`.
-     - CNAME `send` a `send.forge.rmta.net`.
-     - TXT `_dmarc`: `v=DMARC1; p=none;` (recomendado).
-     No añadir el MX de "Enable receiving": pisaría el reenvío de correo
-     que opolab.net ya tiene en Namecheap.
-  3. Clave de Resend como `RESEND_API_KEY` en Vercel (secreta) y, para
-     probar en local, en `.env.local`. La crea y la pega Dani.
-     Ojo (24 de noviembre, 19:30): Dani la puso, pero en el proyecto viejo
-     `opolab` de Vercel. En `opolabv2`, que es el que sirve opolab.net, no
-     está. Hay que añadirla ahí y volver a desplegar.
-  4. Dani ejecuta `supabase/proposals/20261124_lista_de_espera_bienvenida.sql`.
-  5. Código e imágenes subidos (commit `a8f9655`); las imágenes responden
-     en `https://opolab.net/email/`. Falta probar un alta real, cuando
-     estén los pasos 3 y 4 y el dominio verificado. Tras poner la clave en
-     Vercel hay que volver a desplegar para que la coja.
-     Prueba del 24 de noviembre: dominio "Verified" en Resend; alta con
-     `opolabherramienta+bienvenida@gmail.com` desde opolab.net, sale "Estás
-     dentro" pero Resend no recibe ninguna llamada (falta la clave en
-     `opolabv2`). Ese alias ya está en la lista: la siguiente prueba
-     necesita otro. Sin comprobar si el SQL del paso 4 está aplicado.
+- Correo de bienvenida: funcionando en opolab.net desde el 24 de noviembre
+  (detalle en el bloque 1). Falta que Dani lo vea en su Gmail.
 
 **1. Captar: lista de espera** (casi hecho)
 
@@ -61,21 +33,28 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 - [x] Formulario, aviso del responsable y límite de envíos.
 - [ ] Pantalla `/admin/lista-espera`: total, reparto por especialidad y
       comunidad, altas por día y exportar a CSV.
-- [ ] Correo de bienvenida: código hecho y subido el 24 de noviembre, sin
-      enviar ninguno todavía (pasos en "Lo siguiente"). Texto en
-      `lib/email/welcome.ts`, envío en `lib/email/send.ts` (llamada directa
-      a la API de Resend, sin dependencia nueva), remitente
-      `OpoLab <hola@opolab.net>`, respuestas al Gmail. Solo sale en un alta
-      nueva (`ok_new`); sin clave o sin el SQL no envía nada y el formulario
-      sigue igual. Dice que el planificador es gratis y que llegará un Coach
-      de pago sin precio; firma "Dani, de OpoLab". Dani leyó la primera
-      versión, le gustó y pidió hacerlo más visual: ahora lleva cabecera con
-      bolas, el bombo y tres iconos. Las imágenes están en `public/email/` y
-      se dibujan desde `emails/arte/` con `node emails/arte/render.mjs`
-      (Chrome sin ventana). El correo las enlaza desde opolab.net, así que
-      hay que subir el código antes de mandar el primero. Visto en
-      escritorio; sin ver en móvil ni en Gmail u Outlook reales.
-      Quien se apuntó antes no lo recibe: se les puede mandar a mano después.
+- [x] Correo de bienvenida (24 de noviembre). Sale con Resend en un alta
+      nueva (`join_waitlist` devuelve `ok_new`; un correo repetido no recibe
+      nada). Texto en `lib/email/welcome.ts`, envío en `lib/email/send.ts`
+      (llamada directa a la API, sin dependencia nueva), remitente
+      `OpoLab <hola@opolab.net>`, respuestas al Gmail. Imágenes (cabecera
+      con bolas, bombo, tres iconos) en `public/email/`, dibujadas desde
+      `emails/arte/` con `node emails/arte/render.mjs`.
+      Configuración: dominio `opolab.net` verificado en Resend (Irlanda);
+      en Namecheap, Advanced DNS, registros `resend._domainkey` (TXT),
+      `rsend` y `send` (CNAME) y `_dmarc` (TXT); `RESEND_API_KEY` en el
+      proyecto `opolabv2` de Vercel (hay otra, sin uso, en el proyecto viejo
+      `opolab`); SQL `20261124_lista_de_espera_bienvenida.sql` ejecutado.
+      No añadir el MX de "Enable receiving" de Resend: pisaría el reenvío
+      de correo de Namecheap.
+      Comprobado: alta desde opolab.net con un alias del Gmail y Resend lo
+      marca "Delivered". Sin comprobar: cómo se ve en Gmail, móvil y
+      Outlook, si cae en spam, y que repetir un correo no envía otro.
+      En local no envía (no hay clave en `.env.local`).
+- [ ] Dani borra de `waitlist` las filas de prueba
+      `opolabherramienta+bienvenida@gmail.com` y `...+bienvenida2@gmail.com`.
+- [ ] Mandar la bienvenida a quien se apuntó antes del 24 de noviembre por
+      la tarde (no la recibieron). Decide Dani.
 - [ ] Aviso del día del lanzamiento: sin empezar. Hará falta pasar la lista
       a una audiencia de Resend y enlace de baja.
 - [ ] `www.opolab.net` no existe (registro DNS y añadirlo en Vercel).
