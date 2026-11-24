@@ -25,7 +25,7 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 - Claude: pantalla `/admin/lista-espera` (bloque 1) y, después, los arreglos
   del planificador (bloque 2). Dani dio el sí a ese orden el 24 de noviembre.
 - Correo de bienvenida: funcionando en opolab.net desde el 24 de noviembre
-  (detalle en el bloque 1). Falta que Dani lo vea en su Gmail.
+  (detalle en el bloque 1).
 
 **1. Captar: lista de espera** (casi hecho)
 
@@ -48,8 +48,10 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
       No añadir el MX de "Enable receiving" de Resend: pisaría el reenvío
       de correo de Namecheap.
       Comprobado: alta desde opolab.net con un alias del Gmail y Resend lo
-      marca "Delivered". Sin comprobar: cómo se ve en Gmail, móvil y
-      Outlook, si cae en spam, y que repetir un correo no envía otro.
+      marca "Delivered"; llegó a Recibidos (no a spam) de
+      opolabherramienta@gmail.com y en Gmail de escritorio se ve bien, con
+      las cinco imágenes. Sin comprobar: móvil, Outlook y que repetir un
+      correo no envía otro.
       En local no envía (no hay clave en `.env.local`).
 - [ ] Dani borra de `waitlist` las filas de prueba
       `opolabherramienta+bienvenida@gmail.com` y `...+bienvenida2@gmail.com`.
