@@ -26,12 +26,13 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
   del planificador (bloque 2). Dani dio el sí a ese orden el 24 de noviembre.
 - Correo de bienvenida (24 de noviembre): Dani ya tiene cuenta de Resend
   (entra con GitHub, cuenta de opolabherramienta@gmail.com). El código está
-  escrito, sin subir. Para que salga el primer correo faltan, por orden:
-  1. Hecho: `opolab.net` añadido en Resend, región Irlanda (eu-west-1),
-     pendiente de verificar.
-  2. Dani pega en Namecheap (el DNS está allí: `registrar-servers.com`),
-     Advanced DNS, estos cuatro registros y pulsa "I've already added the
-     records" en Resend. Los valores completos están en Resend > Domains.
+  escrito y subido. Para que salga el primer correo faltan, por orden:
+  1. Hecho: `opolab.net` añadido en Resend, región Irlanda (eu-west-1).
+  2. Hecho el 24 de noviembre: los cuatro registros están en Namecheap
+     (Advanced DNS; el DNS está allí, `registrar-servers.com`) y resuelven
+     desde fuera. Resend los estaba verificando a las 18:55 ("DNS
+     verified", dominio todavía en "Pending"): mirar en Resend > Domains
+     que pase a "Verified" antes de la prueba.
      - TXT `resend._domainkey`: la clave DKIM (`p=MIGfMA0G...`).
      - CNAME `rsend` a `rsend-euw1.forge.rmta.net`.
      - CNAME `send` a `send.forge.rmta.net`.
@@ -41,7 +42,10 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
   3. Clave de Resend como `RESEND_API_KEY` en Vercel (secreta) y, para
      probar en local, en `.env.local`. La crea y la pega Dani.
   4. Dani ejecuta `supabase/proposals/20261124_lista_de_espera_bienvenida.sql`.
-  5. Subir el código y probar un alta real.
+  5. Código e imágenes subidos (commit `a8f9655`); las imágenes responden
+     en `https://opolab.net/email/`. Falta probar un alta real, cuando
+     estén los pasos 3 y 4 y el dominio verificado. Tras poner la clave en
+     Vercel hay que volver a desplegar para que la coja.
 
 **1. Captar: lista de espera** (casi hecho)
 
@@ -49,7 +53,7 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 - [x] Formulario, aviso del responsable y límite de envíos.
 - [ ] Pantalla `/admin/lista-espera`: total, reparto por especialidad y
       comunidad, altas por día y exportar a CSV.
-- [ ] Correo de bienvenida: código hecho el 24 de noviembre, sin subir y sin
+- [ ] Correo de bienvenida: código hecho y subido el 24 de noviembre, sin
       enviar ninguno todavía (pasos en "Lo siguiente"). Texto en
       `lib/email/welcome.ts`, envío en `lib/email/send.ts` (llamada directa
       a la API de Resend, sin dependencia nueva), remitente
