@@ -83,8 +83,15 @@ Subida a GitHub (`opolab-v2`) el 24 de noviembre.
 
 Falta para publicarla:
 
-1. Proyecto en Vercel con las variables de Supabase,
-   `NEXT_PUBLIC_SITE_URL` y `NEXT_PUBLIC_SITE_MODE=teaser`.
+1. Vercel: el proyecto `opolabv2` existe desde el 24 de noviembre (equipo
+   `opolabherramienta-7857s-projects`, plan Hobby), con
+   las variables de Supabase, `NEXT_PUBLIC_SITE_MODE=teaser`,
+   `NEXT_PUBLIC_SITE_URL=https://opolabv2.vercel.app` y la rama de
+   producción en `opolab-v2` (cada subida a esa rama despliega). Decisión
+   de Dani: probarlo primero en `opolabv2.vercel.app` y, si todo va bien,
+   pasar opolab.net, que está en ese mismo equipo asignado al proyecto
+   anterior. Al pasarlo hay que cambiar `NEXT_PUBLIC_SITE_URL` y las URL
+   de Supabase Auth (paso 3).
 2. La fecha "enero de 2027" y la frase "Empezamos por Biología y Geología,
    desde Castilla-La Mancha" están escritas en la página: revisarlas.
 3. No hay límite de envíos por IP; el formulario solo tiene un campo trampa
