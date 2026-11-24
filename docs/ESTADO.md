@@ -15,6 +15,75 @@ el 23 de noviembre). Al abrir, lo que tiene que estar bien es esa comunidad:
 número de bolas del sorteo, fechas de su convocatoria y textos. El resto de
 comunidades puede esperar, igual que el resto de especialidades.
 
+## Mapa de lo pendiente (24 de noviembre)
+
+Índice para no perderse. Cinco bloques, por orden; el detalle de cada cosa
+está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
+
+**Lo siguiente**
+
+- Claude: pantalla `/admin/lista-espera` (bloque 1) y, después, los arreglos
+  del planificador (bloque 2). Dani dio el sí a ese orden el 24 de noviembre.
+- Dani: crear la cuenta de Resend cuando pueda (bloque 1). No corre prisa.
+
+**1. Captar: lista de espera** (casi hecho)
+
+- [x] Página "próximamente" publicada en opolab.net, con vídeo.
+- [x] Formulario, aviso del responsable y límite de envíos.
+- [ ] Pantalla `/admin/lista-espera`: total, reparto por especialidad y
+      comunidad, altas por día y exportar a CSV.
+- [ ] Correo de bienvenida y aviso del día del lanzamiento. Depende de Dani:
+      cuenta de Resend, registros DNS de opolab.net y la clave en Vercel.
+      El correo puede decir que el planificador es gratis y que llegará un
+      Coach de pago; el precio no está decidido.
+- [ ] `www.opolab.net` no existe (registro DNS y añadirlo en Vercel).
+- [ ] Título de la pestaña en la portada: sale el genérico, no "Abrimos en
+      enero de 2027".
+- [ ] Dani revisa los textos "enero de 2027" y "desde Castilla-La Mancha".
+- [ ] Dani borra la fila de prueba `prueba-claude@example.com` de `waitlist`.
+- [ ] Ver en pantalla el mensaje del sexto intento del formulario.
+- [ ] Vídeo vertical para Instagram.
+
+**2. Que la parte gratuita funcione bien** (a medias; lo que más pesa para enero)
+
+- [ ] Los 8 arreglos del planificador: lista "Falta, por este orden" en
+      "Dónde lo dejamos".
+- [ ] Limpieza antes de abrir: "Siguientes pasos", punto 2.
+- [ ] Prueba completa con la cuenta de Dani y la de Silvia, en móvil y
+      escritorio: "Siguientes pasos", punto 1. Incluye entrar y recuperar la
+      contraseña en opolab.net, que están sin probar.
+- [ ] Lo de Castilla-La Mancha: número de bolas, fechas y textos.
+
+**3. Abrir el registro** (sin empezar)
+
+- [ ] Aviso legal, privacidad y cookies, con casilla en el registro.
+- [ ] Borrado de cuenta desde Ajustes.
+- [ ] Decidir si se confirma el correo al registrarse (Dani).
+- [ ] Que Supabase no se pause: plan de pago o llamada periódica (Dani).
+      Ya afecta: si se pausa, el formulario público deja de guardar.
+- [ ] Comprobaciones automáticas en GitHub y avisos de errores.
+- [ ] Quitar `NEXT_PUBLIC_SITE_MODE=teaser` en Vercel el día que se abra.
+- [ ] Fusionar `opolab-v2` en `main`.
+
+**4. Beta y lanzamiento** (sin empezar)
+
+- [ ] Beta cerrada con Silvia y 5 a 10 opositores de Biología.
+- [ ] Botón "Cuéntanos qué falla" dentro de la app.
+- [ ] Aviso a la lista de espera el día de la apertura.
+- [ ] Decidir qué especialidades se enseñan al abrir (Dani).
+
+**5. Parte de pago** (sin empezar; no tocar hasta que el registro esté abierto)
+
+- [ ] Probar el Coach con tres o cuatro exposiciones reales de Silvia.
+- [ ] Construir el Coach de exposición.
+- [ ] Decidir precio y qué más lleva el plan de pago (Dani).
+- [ ] Pagos con Stripe.
+- Detalle y criterio gratis/pago: "Siguientes pasos", punto 8.
+
+Mejoras del planificador sin fecha (calculadora de bolas, franjas horarias,
+días bloqueados, exportar calendario, PWA, parte B): "Siguientes pasos",
+punto 6.
+
 ## Qué funciona
 
 - Registro (sin confirmación por email), login, recuperación de contraseña,
@@ -142,7 +211,10 @@ la portada normal.
 
 Dani pidió arreglar los fallos del análisis y después hacer la limpieza. Se
 cortó a mitad de los arreglos. Orden para retomar: terminar "Falta", luego
-el paso 2 (limpieza), que está sin empezar.
+el paso 2 (limpieza), que está sin empezar. El 24 de noviembre no se tocó
+nada de esto: la sesión fue la página pública, Vercel, el dominio y el
+límite del formulario. Antes de estos arreglos va la pantalla
+`/admin/lista-espera` (ver el mapa de arriba).
 
 Hecho, sin probar en la app con cuenta real:
 
@@ -261,8 +333,8 @@ que salga. Puntos sin verificar con datos reales:
   el registro a todo el mundo.
 - Botón "Cuéntanos qué falla" dentro de la app (una tabla `feedback` con
   texto y pantalla). Puede ocupar el sitio de Sugerencias.
-- Lista de espera en la portada (email) mientras no esté abierto, para
-  avisar el día del lanzamiento.
+- Lista de espera en la portada: hecha el 24 de noviembre (ver "Página
+  próximamente"). Falta el aviso del día del lanzamiento.
 - Email de bienvenida al registrarse y, más adelante, recordatorio semanal
   con el plan de la semana. Necesita un remitente propio (Resend o similar).
 
