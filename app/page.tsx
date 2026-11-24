@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Logo } from "@/components/ui/Logo";
 import { ProgressBar, ProgressRing } from "@/components/ui/Progress";
+import { Teaser } from "@/components/landing/teaser";
+import { isTeaserMode } from "@/lib/site-mode";
 
 // Illustrative temario: 75 balls part-way through a preparation.
 const heroBalls: BallState[] = Array.from({ length: 75 }, (_, index) => {
@@ -88,6 +90,10 @@ const sampleSessions: Array<{ icon: IconName; title: string; kind: string; tone:
 ];
 
 export default function Home() {
+  if (isTeaserMode) {
+    return <Teaser />;
+  }
+
   return (
     <main className="min-h-screen overflow-x-clip">
       {/* Hero */}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { isTeaserMode } from "@/lib/site-mode";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -24,9 +25,11 @@ export default async function LoginPage() {
           <Link className="text-violet-700" href="/forgot-password">
             He olvidado mi contraseña
           </Link>
-          <Link className="text-violet-700" href="/register">
-            Crear cuenta
-          </Link>
+          {isTeaserMode ? null : (
+            <Link className="text-violet-700" href="/register">
+              Crear cuenta
+            </Link>
+          )}
         </>
       }
       title="Hola de nuevo"

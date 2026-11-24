@@ -1,7 +1,7 @@
 # OpoLab Planner: estado y siguientes pasos
 
 Documento de relevo. Una sesión nueva debe leer esto antes de tocar nada.
-Última actualización: 23 de noviembre de 2026.
+Última actualización: 24 de noviembre de 2026.
 
 ## Qué es
 
@@ -61,6 +61,37 @@ manuales. Cubierto por pruebas; falta el commit y verlo en la app.
 También sin subir: la pantalla Hoy, este documento y lo de la sección
 siguiente. Todo está en la carpeta de trabajo, sin commit. Con todo ello
 pasan las 47 pruebas, tipos y lint; `npm run build` no se ha ejecutado.
+
+## Página "próximamente" y lista de espera (23 de noviembre)
+
+Para desplegar ya algo con la línea visual nueva sin abrir el registro.
+Subida a GitHub (`opolab-v2`) el 24 de noviembre.
+
+- Página en `components/landing/teaser.tsx`, visible siempre en
+  `/proximamente`. Con `NEXT_PUBLIC_SITE_MODE=teaser` en el despliegue, la
+  portada `/` enseña esa página, `/register` redirige a la portada y la
+  acción de registro se niega. `/login` sigue funcionando para quien ya
+  tiene cuenta (Dani, Silvia, la beta).
+- Lista de espera: formulario (`components/landing/waitlist-form.tsx`) y
+  acción (`app/waitlist/actions.ts`) que guarda correo, especialidad y
+  comunidad en la tabla `waitlist`.
+- Vista en escritorio y móvil. Dani ejecutó el SQL de la tabla `waitlist`
+  el 24 de noviembre y el alta se probó en local: sale "Estás dentro". Quedó
+  una fila de prueba, `prueba-claude@example.com`, que Dani puede borrar.
+- Bajo el botón, el aviso de protección de datos: responsable Daniel
+  González López, contacto opolabherramienta@gmail.com (24 de noviembre).
+
+Falta para publicarla:
+
+1. Proyecto en Vercel con las variables de Supabase,
+   `NEXT_PUBLIC_SITE_URL` y `NEXT_PUBLIC_SITE_MODE=teaser`.
+2. La fecha "enero de 2027" y la frase "Empezamos por Biología y Geología,
+   desde Castilla-La Mancha" están escritas en la página: revisarlas.
+3. No hay límite de envíos por IP; el formulario solo tiene un campo trampa
+   contra bots.
+
+La página incluye el vídeo de presentación (`public/video/`), el mismo de
+la portada normal.
 
 ## Dónde lo dejamos (23 de noviembre, última sesión)
 

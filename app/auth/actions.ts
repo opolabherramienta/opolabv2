@@ -22,6 +22,11 @@ export async function signUpAction(
   _prevState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  // Teaser mode (see lib/site-mode.ts): registration is closed.
+  if (process.env.NEXT_PUBLIC_SITE_MODE === "teaser") {
+    return { error: "El registro todavía no está abierto. Abrimos en enero de 2027." };
+  }
+
   const fullName = getRequiredString(formData, "full_name");
   const email = getRequiredString(formData, "email").toLowerCase();
   const passwordValue = formData.get("password");

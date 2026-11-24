@@ -63,6 +63,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // While the site is in teaser mode nobody new can register.
+  if (process.env.NEXT_PUBLIC_SITE_MODE === "teaser" && matchesPath(pathname, ["/register"])) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
+
   if (isAuthPath && user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/dashboard";
