@@ -87,7 +87,12 @@ Falta para publicarla:
    `opolabherramienta-7857s-projects`, plan Hobby), con
    las variables de Supabase, `NEXT_PUBLIC_SITE_MODE=teaser`,
    `NEXT_PUBLIC_SITE_URL=https://opolabv2.vercel.app` y la rama de
-   producción en `opolab-v2` (cada subida a esa rama despliega). Decisión
+   producción en `opolab-v2` (cada subida a esa rama despliega).
+   Desplegado y comprobado el 24 de noviembre en
+   https://opolabv2.vercel.app: la portada enseña la página próximamente,
+   `/register` redirige a la portada, `/login` responde, `/dev-preview` da
+   404 y el formulario devuelve "Estás dentro". Sin comprobar allí: entrar
+   con una cuenta real y la vista en móvil. Decisión
    de Dani: probarlo primero en `opolabv2.vercel.app` y, si todo va bien,
    pasar opolab.net, que está en ese mismo equipo asignado al proyecto
    anterior. Al pasarlo hay que cambiar `NEXT_PUBLIC_SITE_URL` y las URL
