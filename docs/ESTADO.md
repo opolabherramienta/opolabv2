@@ -298,7 +298,15 @@ o se quiera Castilla-La Mancha. Falta la versión vertical para Instagram.
 
 ### 8. Premium e IA
 
-- Stripe: plan gratis y plan de pago. Decidir antes qué queda en cada uno.
+- Criterio de Dani (24 de noviembre): todo lo que hay hoy (temario,
+  prácticos, calendario, plan, Hoy, progreso) es la parte gratuita y sirve
+  para captar. La parte de pago llega después y su pieza principal es el
+  Coach: exponer el tema ante una IA que hace de tribunal. Propuesta de
+  Claude, sin decidir: de pago lo que corrige y cuesta dinero por uso
+  (Coach de exposición, corrección del tema escrito, preguntas de repaso
+  generadas del tema, defensa de la programación); gratis lo que organiza.
+  Precio sin decidir.
+- Stripe: plan gratis y plan de pago, cuando exista la primera pieza de pago.
 - OpoLab Coach: grabarse exponiendo, transcripción y corrección con IA contra
   el tema del opositor. Presentarlo como compañero de ensayo, no como nota
   del tribunal. Probarlo antes con tres o cuatro exposiciones reales de Silvia.
@@ -447,7 +455,8 @@ Revisado sin problemas: redirecciones de las rutas de autenticación,
 - Datos del titular para los textos legales.
 - Qué especialidades se enseñan el día de la apertura.
 - Supabase: plan de pago o mantenerlo despierto con una llamada periódica.
-- Qué queda en el plan gratis y qué en el de pago.
+- Precio del plan de pago y qué piezas lleva además del Coach (el criterio
+  general ya está: ver "Premium e IA").
 
 ## Cosas que conviene saber
 
