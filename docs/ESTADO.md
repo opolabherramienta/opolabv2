@@ -104,8 +104,35 @@ Falta para publicarla:
    Ojo: desde ahora cada subida a `opolab-v2` sale a opolab.net.
 2. La fecha "enero de 2027" y la frase "Empezamos por Biología y Geología,
    desde Castilla-La Mancha" están escritas en la página: revisarlas.
-3. No hay límite de envíos por IP; el formulario solo tiene un campo trampa
-   contra bots.
+3. Límite de envíos (24 de noviembre): escrito y subido, pero solo actúa
+   cuando Dani ejecute `supabase/proposals/20261124_lista_de_espera_limite.sql`.
+   Ese SQL crea la función `join_waitlist` (5 intentos por hora desde la
+   misma conexión, 300 por hora en total) y cierra la inserción directa en
+   `waitlist`. La acción manda un resumen diario de la IP, no la IP; se
+   guarda en `waitlist_attempts` y se borra al día. Mientras el SQL no esté
+   ejecutado, la acción inserta como antes (probado en local). Con el SQL
+   ejecutado falta probar el alta y el aviso del sexto intento.
+
+### Correo de bienvenida y gestión de la lista (pendiente, pedido por Dani el 24 de noviembre)
+
+Dani quiere que quien se apunte reciba un correo cuidado (qué es OpoLab, qué
+costará, que avisaremos al abrir) y tener la lista controlada. Propuesta,
+sin empezar; es una sesión aparte:
+
+- Envío con Resend (u otro similar) desde la acción del formulario, tras un
+  alta nueva. Necesita de Dani: cuenta, registros DNS de opolab.net en su
+  registrador para enviar como `hola@opolab.net`, y la clave como variable
+  secreta en Vercel. opolab.net no tiene buzón: las respuestas irían al Gmail.
+- El mismo servicio guarda los contactos como audiencia y permite el envío
+  masivo del día del lanzamiento con enlace de baja, que es obligatorio. No
+  hace falta un CRM aparte para esto.
+- Pantalla de administración `/admin/lista-espera`: total, reparto por
+  especialidad y comunidad, altas por día y exportar a CSV. La cuenta admin
+  ya puede leer la tabla.
+- Antes de escribir el correo hay que decidir qué se dice del precio: hoy
+  no hay nada decidido sobre el plan gratis y el de pago.
+- El aviso legal del formulario habla solo de avisar del lanzamiento; un
+  correo de bienvenida encaja, una serie de correos comerciales no.
 
 La página incluye el vídeo de presentación (`public/video/`), el mismo de
 la portada normal.
