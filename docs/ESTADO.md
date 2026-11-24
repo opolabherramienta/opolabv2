@@ -24,7 +24,24 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 
 - Claude: pantalla `/admin/lista-espera` (bloque 1) y, después, los arreglos
   del planificador (bloque 2). Dani dio el sí a ese orden el 24 de noviembre.
-- Dani: crear la cuenta de Resend cuando pueda (bloque 1). No corre prisa.
+- Correo de bienvenida (24 de noviembre): Dani ya tiene cuenta de Resend
+  (entra con GitHub, cuenta de opolabherramienta@gmail.com). El código está
+  escrito, sin subir. Para que salga el primer correo faltan, por orden:
+  1. Hecho: `opolab.net` añadido en Resend, región Irlanda (eu-west-1),
+     pendiente de verificar.
+  2. Dani pega en Namecheap (el DNS está allí: `registrar-servers.com`),
+     Advanced DNS, estos cuatro registros y pulsa "I've already added the
+     records" en Resend. Los valores completos están en Resend > Domains.
+     - TXT `resend._domainkey`: la clave DKIM (`p=MIGfMA0G...`).
+     - CNAME `rsend` a `rsend-euw1.forge.rmta.net`.
+     - CNAME `send` a `send.forge.rmta.net`.
+     - TXT `_dmarc`: `v=DMARC1; p=none;` (recomendado).
+     No añadir el MX de "Enable receiving": pisaría el reenvío de correo
+     que opolab.net ya tiene en Namecheap.
+  3. Clave de Resend como `RESEND_API_KEY` en Vercel (secreta) y, para
+     probar en local, en `.env.local`. La crea y la pega Dani.
+  4. Dani ejecuta `supabase/proposals/20261124_lista_de_espera_bienvenida.sql`.
+  5. Subir el código y probar un alta real.
 
 **1. Captar: lista de espera** (casi hecho)
 
@@ -32,10 +49,23 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 - [x] Formulario, aviso del responsable y límite de envíos.
 - [ ] Pantalla `/admin/lista-espera`: total, reparto por especialidad y
       comunidad, altas por día y exportar a CSV.
-- [ ] Correo de bienvenida y aviso del día del lanzamiento. Depende de Dani:
-      cuenta de Resend, registros DNS de opolab.net y la clave en Vercel.
-      El correo puede decir que el planificador es gratis y que llegará un
-      Coach de pago; el precio no está decidido.
+- [ ] Correo de bienvenida: código hecho el 24 de noviembre, sin subir y sin
+      enviar ninguno todavía (pasos en "Lo siguiente"). Texto en
+      `lib/email/welcome.ts`, envío en `lib/email/send.ts` (llamada directa
+      a la API de Resend, sin dependencia nueva), remitente
+      `OpoLab <hola@opolab.net>`, respuestas al Gmail. Solo sale en un alta
+      nueva (`ok_new`); sin clave o sin el SQL no envía nada y el formulario
+      sigue igual. Dice que el planificador es gratis y que llegará un Coach
+      de pago sin precio; firma "Dani, de OpoLab". Dani leyó la primera
+      versión, le gustó y pidió hacerlo más visual: ahora lleva cabecera con
+      bolas, el bombo y tres iconos. Las imágenes están en `public/email/` y
+      se dibujan desde `emails/arte/` con `node emails/arte/render.mjs`
+      (Chrome sin ventana). El correo las enlaza desde opolab.net, así que
+      hay que subir el código antes de mandar el primero. Visto en
+      escritorio; sin ver en móvil ni en Gmail u Outlook reales.
+      Quien se apuntó antes no lo recibe: se les puede mandar a mano después.
+- [ ] Aviso del día del lanzamiento: sin empezar. Hará falta pasar la lista
+      a una audiencia de Resend y enlace de baja.
 - [ ] `www.opolab.net` no existe (registro DNS y añadirlo en Vercel).
 - [ ] Título de la pestaña en la portada: sale el genérico, no "Abrimos en
       enero de 2027".

@@ -2,6 +2,8 @@
 
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
+import { after } from "next/server";
+import { sendWaitlistWelcome } from "@/lib/email/send";
 import { createClient } from "@/lib/supabase/server";
 
 export type WaitlistState = {
@@ -63,6 +65,14 @@ export async function joinWaitlistAction(
   });
 
   if (!rpcError) {
+    // "ok_new" is a first sign-up; plain "ok" is someone already on the list,
+    // who gets no second welcome (nobody can flood an inbox by resubmitting).
+    if (outcome === "ok_new") {
+      after(() => sendWaitlistWelcome(email));
+
+      return { status: "ok", message: "" };
+    }
+
     if (outcome === "ok") {
       return { status: "ok", message: "" };
     }

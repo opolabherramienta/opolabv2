@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Cabecera del correo de bienvenida. Se convierte en public/email/cabecera.png
+     con `node emails/arte/render.mjs`. Lienzo: 600 x 330. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Figtree:wght@600;700&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 600px; height: 330px; overflow: hidden; }
+  body { position: relative; background: #8b5cf6; color: #fff; font-family: "Figtree", sans-serif; }
+  .deco { position: absolute; border-radius: 50%; }
+  .wrap { position: relative; padding: 30px 36px; }
+  .logo { height: 40px; display: block; }
+  h1 { margin-top: 26px; font: 800 58px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -0.01em; }
+  h1 span { display: inline-block; background: #10b981; border-radius: 0.3em; padding: 0.02em 0.22em 0.1em; box-shadow: 0 5px 0 #0a8f63; }
+  .row { margin-top: 34px; display: flex; align-items: center; gap: 10px; }
+  .ball { position: relative; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 21px/1 "Bricolage Grotesque", sans-serif; flex: none; }
+  .ball i { position: absolute; top: 14%; left: 20%; width: 30%; height: 22%; border-radius: 50%; background: rgba(255,255,255,.45); filter: blur(1px); }
+  .verde { background: #10b981; box-shadow: inset 0 -4px 0 #0a8f63; }
+  .azul { background: #3b82f6; box-shadow: inset 0 -4px 0 #2563eb; }
+  .ambar { background: #fbbf24; color: #1e1a38; box-shadow: inset 0 -4px 0 #d4950a; }
+  .blanca { background: #fff; color: #6d28d9; box-shadow: inset 0 0 0 2px #c4b5fd, inset 0 -4px 0 #ede9fe; }
+  .row p { margin-left: 8px; max-width: 210px; font-size: 15px; line-height: 20px; font-weight: 700; color: #ede9fe; }
+</style>
+</head>
+<body>
+  <span class="deco" style="top:-120px;left:-100px;width:300px;height:300px;background:rgba(255,255,255,.1)"></span>
+  <span class="deco" style="right:-90px;bottom:-130px;width:330px;height:330px;background:rgba(16,185,129,.4)"></span>
+  <span class="deco" style="top:54px;right:150px;width:40px;height:40px;background:#fbbf24;box-shadow:inset 0 -4px 0 #d4950a"></span>
+  <span class="deco" style="top:128px;right:72px;width:24px;height:24px;background:#3b82f6;box-shadow:inset 0 -3px 0 #2563eb"></span>
+  <div class="wrap">
+    <img class="logo" src="../../public/logo-opolab-blanco.png" alt="">
+    <h1>Estás <span>dentro.</span></h1>
+    <div class="row">
+      <div class="ball verde"><i></i>14</div>
+      <div class="ball azul"><i></i>27</div>
+      <div class="ball ambar"><i></i>52</div>
+      <div class="ball blanca">?</div>
+      <p>Que la bola que salga sea una de las tuyas.</p>
+    </div>
+  </div>
+</body>
+</html>

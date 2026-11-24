@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- El bombo del correo de bienvenida: mismas reglas de color que la portada
+     (components/landing/teaser.tsx). Sale en public/email/bombo.png. Lienzo: 536 x 224. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 536px; height: 224px; overflow: hidden; background: #fff; }
+  #bombo { display: grid; grid-template-columns: repeat(10, 44px); gap: 8px 10.6px; padding: 12px 0; }
+  .ball { position: relative; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 15px/1 "Bricolage Grotesque", sans-serif; color: #fff; }
+  .ball i { position: absolute; top: 14%; left: 20%; width: 30%; height: 22%; border-radius: 50%; background: rgba(255,255,255,.45); filter: blur(1px); }
+  .off { background: #eee9fb; color: #968db5; box-shadow: inset 0 -3px 0 #ded7f3; }
+  .selected { background: #fff; color: #6d28d9; box-shadow: inset 0 0 0 2px #c4b5fd, inset 0 -3px 0 #ede9fe; }
+  .started { background: #fbbf24; color: #1e1a38; box-shadow: inset 0 -4px 0 #d4950a; }
+  .studied { background: #3b82f6; box-shadow: inset 0 -4px 0 #2563eb; }
+  .mastered { background: #10b981; box-shadow: inset 0 -4px 0 #0a8f63; }
+</style>
+</head>
+<body>
+  <div id="bombo"></div>
+  <script>
+    const bombo = document.getElementById("bombo");
+    for (let n = 1; n <= 40; n += 1) {
+      let state = "selected";
+      if (n % 11 === 0) state = "off";
+      else if (n <= 8 || n % 9 === 0) state = "mastered";
+      else if (n <= 17 || n % 7 === 0) state = "studied";
+      else if (n <= 24 || n % 5 === 0) state = "started";
+      const shine = state === "off" || state === "selected" ? "" : "<i></i>";
+      bombo.insertAdjacentHTML("beforeend", `<div class="ball ${state}">${shine}${n}</div>`);
+    }
+  </script>
+</body>
+</html>
