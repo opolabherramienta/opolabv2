@@ -86,17 +86,20 @@ Falta para publicarla:
 1. Vercel: el proyecto `opolabv2` existe desde el 24 de noviembre (equipo
    `opolabherramienta-7857s-projects`, plan Hobby), con
    las variables de Supabase, `NEXT_PUBLIC_SITE_MODE=teaser`,
-   `NEXT_PUBLIC_SITE_URL=https://opolabv2.vercel.app` y la rama de
+   `NEXT_PUBLIC_SITE_URL` y la rama de
    producción en `opolab-v2` (cada subida a esa rama despliega).
    Desplegado y comprobado el 24 de noviembre en
    https://opolabv2.vercel.app: la portada enseña la página próximamente,
    `/register` redirige a la portada, `/login` responde, `/dev-preview` da
    404 y el formulario devuelve "Estás dentro". Sin comprobar allí: entrar
-   con una cuenta real y la vista en móvil. Decisión
-   de Dani: probarlo primero en `opolabv2.vercel.app` y, si todo va bien,
-   pasar opolab.net, que está en ese mismo equipo asignado al proyecto
-   anterior. Al pasarlo hay que cambiar `NEXT_PUBLIC_SITE_URL` y las URL
-   de Supabase Auth (paso 3).
+   con una cuenta real y la vista en móvil.
+   Ese mismo día Dani pidió pasar opolab.net: el dominio está ya asignado
+   a `opolabv2` (antes estaba en el proyecto `opolab`, que sigue existiendo
+   sin dominio) y `NEXT_PUBLIC_SITE_URL` vale `https://opolab.net`.
+   `www.opolab.net` no está configurado. Falta en Supabase Auth: Site URL
+   `https://opolab.net` y Redirect URLs `https://opolab.net/auth/recovery`
+   y `https://opolab.net/auth/callback`; sin eso, recuperar la contraseña
+   no funciona en el dominio.
 2. La fecha "enero de 2027" y la frase "Empezamos por Biología y Geología,
    desde Castilla-La Mancha" están escritas en la página: revisarlas.
 3. No hay límite de envíos por IP; el formulario solo tiene un campo trampa
