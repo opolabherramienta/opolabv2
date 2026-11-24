@@ -104,14 +104,15 @@ Falta para publicarla:
    Ojo: desde ahora cada subida a `opolab-v2` sale a opolab.net.
 2. La fecha "enero de 2027" y la frase "Empezamos por Biología y Geología,
    desde Castilla-La Mancha" están escritas en la página: revisarlas.
-3. Límite de envíos (24 de noviembre): escrito y subido, pero solo actúa
-   cuando Dani ejecute `supabase/proposals/20261124_lista_de_espera_limite.sql`.
-   Ese SQL crea la función `join_waitlist` (5 intentos por hora desde la
-   misma conexión, 300 por hora en total) y cierra la inserción directa en
-   `waitlist`. La acción manda un resumen diario de la IP, no la IP; se
-   guarda en `waitlist_attempts` y se borra al día. Mientras el SQL no esté
-   ejecutado, la acción inserta como antes (probado en local). Con el SQL
-   ejecutado falta probar el alta y el aviso del sexto intento.
+3. Límite de envíos (24 de noviembre): hecho. Dani ejecutó
+   `supabase/proposals/20261124_lista_de_espera_limite.sql`, que crea la
+   función `join_waitlist` (5 intentos por hora desde la misma conexión,
+   300 por hora en total) y cierra la inserción directa en `waitlist`. La
+   acción manda un resumen diario de la IP, no la IP; se guarda en
+   `waitlist_attempts` y se borra al día. Comprobado contra la base de
+   datos: cinco intentos entran, el sexto devuelve `rate_limited`, la
+   inserción directa da permiso denegado y el alta desde opolab.net
+   funciona. Sin ver: el mensaje del sexto intento en pantalla.
 
 ### Correo de bienvenida y gestión de la lista (pendiente, pedido por Dani el 24 de noviembre)
 
