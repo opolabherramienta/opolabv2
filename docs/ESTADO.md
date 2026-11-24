@@ -41,11 +41,19 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
      que opolab.net ya tiene en Namecheap.
   3. Clave de Resend como `RESEND_API_KEY` en Vercel (secreta) y, para
      probar en local, en `.env.local`. La crea y la pega Dani.
+     Ojo (24 de noviembre, 19:30): Dani la puso, pero en el proyecto viejo
+     `opolab` de Vercel. En `opolabv2`, que es el que sirve opolab.net, no
+     está. Hay que añadirla ahí y volver a desplegar.
   4. Dani ejecuta `supabase/proposals/20261124_lista_de_espera_bienvenida.sql`.
   5. Código e imágenes subidos (commit `a8f9655`); las imágenes responden
      en `https://opolab.net/email/`. Falta probar un alta real, cuando
      estén los pasos 3 y 4 y el dominio verificado. Tras poner la clave en
      Vercel hay que volver a desplegar para que la coja.
+     Prueba del 24 de noviembre: dominio "Verified" en Resend; alta con
+     `opolabherramienta+bienvenida@gmail.com` desde opolab.net, sale "Estás
+     dentro" pero Resend no recibe ninguna llamada (falta la clave en
+     `opolabv2`). Ese alias ya está en la lista: la siguiente prueba
+     necesita otro. Sin comprobar si el SQL del paso 4 está aplicado.
 
 **1. Captar: lista de espera** (casi hecho)
 
