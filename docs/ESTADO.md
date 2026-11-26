@@ -31,11 +31,12 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 - Semana 1 (26 a 29 de noviembre): arreglos 1 a 7 hechos el día 26, sin
   commit y sin probar con cuenta real (la prueba de Dani está en "Dónde lo
   dejamos"). Del punto 8 están hechos "Llevar todos / ninguno" en Temas,
-  la fecha de examen opcional y los primeros pasos en Inicio; sigue marcar
-  "Estudiado" en Temas, y después las erratas y la simulación con los
-  números de Silvia.
-- Commit del 26 de noviembre en `opolab-v2` con todo lo anterior, sin
-  subir: al subirlo sale a opolab.net. `package.json` y
+  la fecha de examen opcional, los primeros pasos en Inicio y marcar
+  "Estudiado" en Temas (este último, sin commit). Quedan las erratas y la
+  simulación con los números de Silvia.
+- Commit `cb3bfad` del 26 de noviembre en `opolab-v2`, subido y
+  desplegado en opolab.net ese día (portada y `/login` responden,
+  `/register` sigue cerrado). `package.json` y
   `package-lock.json` (sonner y recharts, de otra sesión) quedan fuera.
 - Prueba en la app de los arreglos hecha por Claude el 26 de noviembre con
   una cuenta de prueba: bien en todo salvo el arreglo 1, que no se pudo
@@ -474,6 +475,25 @@ escritorio y móvil. Sin probar: una cuenta recién creada de principio a
 fin. No se ha tocado el onboarding (sigue pidiendo `main_goal` y la etapa,
 que no se usan): reducirlo a 3 pasos queda pendiente.
 
+Punto 8, "Estudiado" en Temas (26 de noviembre, sin commit):
+`syncTopicStudied` y `studiedSessionChange` en `lib/study/progress-sync.ts`,
+llamadas desde `components/topics/topics-client.tsx`. Al marcar un tema
+como estudiado en Temas, su sesión de estudio pendiente del plan pasa a
+completada y se trae a hoy; si no tiene sesión, se escribe una completada
+con la descripción "Marcado como estudiado en Temas.". Con eso suma XP y
+racha (que salen de las sesiones completadas) y el plan sabe qué día se
+estudió, así que al recalcular entran sus repasos a 3, 7, 14 y 30 días. Al
+desmarcar se deshace: la sesión del plan vuelve a pendiente y la escrita
+por Temas se borra; una sesión escrita a mano por el usuario no se toca.
+Temas enseña un aviso con enlace a Inicio para recalcular (no recalcula
+solo). Prueba nueva de la decisión; pasan las 61, tipos, lint y build.
+Probado con la cuenta de prueba: marcar el Tema 2 (con sesión en el plan)
+y el 75 (sin sesión) sube el XP de 35 a 55 y a 75 y los dos salen en Hoy
+como hechos; desmarcarlos lo devuelve a 35. Sin comprobar en pantalla: las
+fechas de los repasos tras recalcular con un tema marcado (lo cubren las
+pruebas del planificador). Límite: los repasos no entran hasta que el
+usuario recalcula.
+
 Corrección: `/dev-preview/calendario` existe (más arriba se dice que
 Calendario no tiene vista de ejemplo). Los arreglos 5 y 6 no se han mirado
 allí.
@@ -745,7 +765,8 @@ Revisado sin problemas: redirecciones de las rutas de autenticación,
 
 - **Elegir temas es de uno en uno**: 75 temas son unos 150 toques el primer
   día. Hace falta "Llevar todos / ninguno" y selección tocando las bolas.
-- **Temas y Calendario apuntan el progreso por separado**: marcar un tema
+- **Temas y Calendario apuntan el progreso por separado** (arreglado el
+  26 de noviembre para "Estudiado"): marcar un tema
   como estudiado en Temas no da XP ni racha ni genera repasos, y su sesión
   sigue pendiente hasta recalcular.
 - **No hay primeros pasos guiados**: tras el onboarding, "Crear mi plan"

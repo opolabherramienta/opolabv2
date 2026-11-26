@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import { syncTopicStudied } from "@/lib/study/progress-sync";
 import { createClient } from "@/lib/supabase/client";
 import {
   Ball,
@@ -162,6 +164,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const [bulkSaving, setBulkSaving] = useState(false);
+  const [studiedNotice, setStudiedNotice] = useState("");
 
   const stats = useMemo(
     () => ({
@@ -259,6 +262,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
     const nextTopic = { ...currentTopic, ...patch };
 
     setError("");
+    setStudiedNotice("");
     setSavingIds((current) => new Set(current).add(baseTopicId));
     setTopics((current) =>
       current.map((topic) =>
@@ -273,6 +277,42 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
           topic.baseTopicId === baseTopicId ? rowToTopic(topic, savedRow) : topic,
         ),
       );
+
+      // "Estudiado" also reaches the calendar, so it counts for the streak,
+      // the XP and the reviews of the next plan. A failure here never undoes
+      // the topic, which is already saved.
+      if (nextTopic.studiedDone !== currentTopic.studiedDone) {
+        try {
+          const action = await syncTopicStudied(
+            supabase,
+            userId,
+            {
+              userTopicId: savedRow.id,
+              baseTopicId,
+              number: currentTopic.topicNumber,
+              title: currentTopic.title,
+            },
+            nextTopic.studiedDone,
+          );
+          const name =
+            currentTopic.topicNumber === null ? "El tema" : `El tema ${currentTopic.topicNumber}`;
+
+          if (action === "complete" || action === "create") {
+            setStudiedNotice(
+              `${name} cuenta ya como estudiado hoy: suma a tu racha y a tu XP. Recalcula el plan para que entren sus repasos.`,
+            );
+          } else if (action === "reopen" || action === "delete") {
+            setStudiedNotice(
+              `${name} vuelve a estar pendiente. Recalcula el plan para ponerlo otra vez en el calendario.`,
+            );
+          }
+        } catch (syncError) {
+          console.error("Error apuntando el tema en el calendario:", syncError);
+          setError(
+            "El tema se ha guardado, pero no se pudo apuntar en el calendario. Vuelve a marcarlo en un momento.",
+          );
+        }
+      }
     } catch (saveError) {
       const payload = buildPayload(userId, nextTopic);
       const message = getSupabaseErrorMessage(saveError);
@@ -559,6 +599,18 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
           role="alert"
         >
           {error}
+        </p>
+      ) : null}
+
+      {studiedNotice ? (
+        <p
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"
+          role="status"
+        >
+          <span className="min-w-0 flex-1 basis-60">{studiedNotice}</span>
+          <Link className="font-bold text-violet-700 underline" href="/dashboard">
+            Ir a recalcular
+          </Link>
         </p>
       ) : null}
 

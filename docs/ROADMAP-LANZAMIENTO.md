@@ -48,7 +48,9 @@ Todo es trabajo de Claude con Dani mirando; no depende de nadie.
   - [ ] Primeros pasos en Inicio: temas, prácticos, plan (hecho el 26 nov,
         visto en `/dev-preview/inicio?paso=1`; sin probar con una cuenta
         recién creada).
-  - [ ] Marcar "Estudiado" en Temas cuenta para el plan, el XP y los repasos.
+  - [x] Marcar "Estudiado" en Temas cuenta para el plan, el XP y los
+        repasos (26 nov, probado con cuenta real; los repasos entran al
+        recalcular).
 - [ ] Erratas y mensajes en inglés ("contrasena", "sesion", errores de
       Supabase).
 - [ ] Simular el plan con los 75 temas y números de Silvia (horas,
