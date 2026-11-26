@@ -5,6 +5,7 @@ import {
 } from "@/components/practicals/practicals-client";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { friendlyError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ function getLoadError(errors: Array<{ message: string } | null>) {
     return null;
   }
 
-  return `No se pudieron cargar los prácticos: ${error.message}`;
+  return `No se pudieron cargar los prácticos. ${friendlyError(error)}`;
 }
 
 export default async function PracticosPage() {

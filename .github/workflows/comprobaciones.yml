@@ -1,0 +1,48 @@
+name: Comprobaciones
+
+# En cada subida y en cada pull request: lint, tipos, pruebas y build.
+# No despliega nada: de publicar se encarga Vercel.
+on:
+  push:
+    branches: [opolab-v2, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: comprobaciones-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Pruebas
+        run: npm test
+        env:
+          TZ: UTC
+
+      - name: Build
+        run: npm run build
+        env:
+          # Valores de relleno: el build solo necesita que existan.
+          NEXT_PUBLIC_SUPABASE_URL: https://ejemplo.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: clave-de-relleno
+          NEXT_PUBLIC_SITE_URL: https://opolab.net

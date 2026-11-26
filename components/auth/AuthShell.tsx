@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { LegalLinks } from "@/components/legal/LegalPage";
 import { Logo } from "@/components/ui/Logo";
 
 type AuthShellProps = {
@@ -29,6 +30,7 @@ export function AuthShell({ children, description, footer, title }: AuthShellPro
           </div>
         ) : null}
       </section>
+      <LegalLinks className="relative mt-6 justify-center text-sm font-medium text-white/85 [&_a:hover]:text-white" />
     </main>
   );
 }

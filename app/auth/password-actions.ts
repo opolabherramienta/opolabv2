@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { friendlyError } from "@/lib/errors";
 
 type PasswordActionState = {
   error: string;
@@ -107,7 +108,9 @@ export async function updatePasswordAction(
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return { error: `No se pudo cambiar la contraseña: ${error.message}` };
+    console.error("Cambio de contraseña:", error.message);
+
+    return { error: `No se pudo cambiar la contraseña. ${friendlyError(error)}` };
   }
 
   redirect("/dashboard");

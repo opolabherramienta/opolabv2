@@ -1,4 +1,5 @@
-﻿import { LogoutButton } from "@/components/auth/LogoutButton";
+﻿import { DeleteAccountCard } from "@/components/account/DeleteAccountCard";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { OnboardingForm } from "@/components/onboarding/OnboardingForm";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -56,7 +57,7 @@ export default async function AjustesPage({
         </p>
         {data.errorMessage ? (
           <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            No se pudieron cargar tus ajustes: {data.errorMessage}
+            No se pudieron cargar tus ajustes. Inténtalo de nuevo en un momento.
           </p>
         ) : (
           <OnboardingForm
@@ -81,6 +82,8 @@ export default async function AjustesPage({
           <LogoutButton />
         </div>
       </Card>
+
+      <DeleteAccountCard />
     </div>
   );
 }

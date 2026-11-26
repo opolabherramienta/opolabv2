@@ -1,4 +1,6 @@
-﻿import Link from "next/link";
+﻿import type { Metadata } from "next";
+import Link from "next/link";
+import { LegalLinks } from "@/components/legal/LegalPage";
 import { Ball, ballStateLabels, type BallState } from "@/components/ui/Ball";
 import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
@@ -88,6 +90,16 @@ const sampleSessions: Array<{ icon: IconName; title: string; kind: string; tone:
     done: false,
   },
 ];
+
+// While the site is in teaser mode the home page is the coming-soon page,
+// and the browser tab says so.
+export const metadata: Metadata = isTeaserMode
+  ? {
+      title: "OpoLab · Abrimos en enero de 2027",
+      description:
+        "El planificador para opositores a profesorado de Secundaria: tu temario en bolas, un plan que se hace solo y repasos que llegan cuando toca. Apúntate y entra antes que nadie.",
+    }
+  : {};
 
 export default function Home() {
   if (isTeaserMode) {
@@ -358,6 +370,7 @@ export default function Home() {
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t-2 border-slate-200 bg-white px-5 py-6 text-sm font-medium text-slate-500">
         <Logo height={30} />
         <p>Hecho por y para opositores.</p>
+        <LegalLinks />
         <Link className="font-bold text-violet-700" href="/login">
           Iniciar sesión
         </Link>

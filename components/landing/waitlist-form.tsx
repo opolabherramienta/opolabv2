@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { legalOwner } from "@/lib/legal";
 import { joinWaitlistAction, type WaitlistState } from "@/app/waitlist/actions";
 import { Button } from "@/components/ui/Button";
 import { ConfettiBurst } from "@/components/ui/Confetti";
@@ -154,14 +155,18 @@ export function WaitlistForm() {
       </Button>
 
       <p className="mt-4 text-xs leading-5 text-slate-500">
-        Responsable: Daniel González López. Usamos tu correo solo para avisarte
+        Responsable: {legalOwner.name}. Usamos tu correo solo para avisarte
         del lanzamiento, porque nos das tu permiso al marcar la casilla. No se
         lo damos a nadie. Para borrarlo, consultarlo o corregirlo, escribe a{" "}
         <a
           className="font-semibold text-violet-700 underline underline-offset-2"
-          href="mailto:opolabherramienta@gmail.com"
+          href={`mailto:${legalOwner.email}`}
         >
-          opolabherramienta@gmail.com
+          {legalOwner.email}
+        </a>
+        . Más detalle en la{" "}
+        <a className="font-semibold text-violet-700 underline underline-offset-2" href="/privacidad">
+          política de privacidad
         </a>
         .
       </p>

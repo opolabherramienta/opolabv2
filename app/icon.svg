@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- OpoLab: the flask of the logo, white on the brand violet. -->
+  <rect width="64" height="64" rx="14" fill="#8b5cf6"/>
+  <clipPath id="body"><circle cx="32" cy="40" r="13"/></clipPath>
+  <g fill="#fff">
+    <rect x="21" y="9" width="22" height="6" rx="3"/>
+    <rect x="25.500" y="12" width="13" height="16"/>
+    <circle cx="32" cy="40" r="17"/>
+  </g>
+  <rect x="15" y="38" width="34" height="20" fill="#10b981" clip-path="url(#body)"/>
+  <g fill="#fff">
+    <circle cx="27" cy="45" r="2.600"/>
+    <circle cx="36.500" cy="47.500" r="1.800"/>
+    <circle cx="35" cy="41.500" r="1.200"/>
+  </g>
+</svg>

@@ -52,9 +52,23 @@ Todo es trabajo de Claude con Dani mirando; no depende de nadie.
         repasos (26 nov, probado con cuenta real; los repasos entran al
         recalcular).
 - [ ] Erratas y mensajes en inglés ("contrasena", "sesion", errores de
-      Supabase).
+      Supabase). Hecho el 26 nov, con pruebas; sin ver en pantalla.
 - [ ] Simular el plan con los 75 temas y números de Silvia (horas,
       examen en junio) y revisar que tiene sentido.
+
+**Adelantado el 26 nov** (era de las semanas 2 y de Navidad; hecho, sin
+commit; detalle en ESTADO.md, "Sesión del 26 de noviembre, segunda parte"):
+cabeceras de seguridad, regla única de contraseña, limpieza (página de
+diagnóstico fuera, páginas de error y de carga, título de la pestaña,
+especialidades de relleno como "próximamente", icono de la marca), borrado
+de cuenta, "Cuéntanos qué falla", comprobaciones en GitHub y textos
+legales a nombre de ALHAJA PRODUCCIONES SC.
+
+**Dani, para que funcione lo adelantado:** ejecutar en Supabase
+`supabase/proposals/20261126_feedback.sql` y
+`supabase/proposals/20261126_borrar_cuenta.sql`. Dani dijo el 26 nov que
+los SQL y los textos legales están bien; no consta si los SQL están ya
+ejecutados, así que la próxima sesión lo comprueba probando el buzón.
 
 **Dani, esta semana:** borrar las filas de prueba de `waitlist`, decidir si
 manda la bienvenida a los que se apuntaron antes del 24 de noviembre y
@@ -64,16 +78,20 @@ elegir a los 5 a 10 de la beta.
 
 - [ ] Dani crea la cuenta de Silvia (pasos en ESTADO.md, bloque 2) el lunes
       30. Ella usa la app de verdad toda la semana y apunta con `/silvia`.
+      Qué tiene que mirar además de los fallos: `docs/REVISION-SILVIA.md`.
 - [ ] Dani hace la prueba completa en móvil con su cuenta: entrar y
       recuperar la contraseña en opolab.net, crear plan, Hoy, recalcular.
 - [ ] Silvia da los datos de Castilla-La Mancha: número de bolas del sorteo,
       fechas previstas de la convocatoria 2027 y si hay algo propio de CLM.
 - [ ] Limpieza rápida: quitar `test-supabase`, esconder o marcar
       "próximamente" las especialidades de relleno, páginas de error y de
-      carga propias, título de la pestaña.
+      carga propias, título de la pestaña. Hecho el 26 nov, visto en local;
+      sin commit.
 - [ ] Botón "Cuéntanos qué falla" dentro de la app (sustituye Sugerencias).
+      Hecho el 26 nov; no guarda hasta que Dani ejecute el SQL.
 - [ ] Aviso de privacidad mínimo para la beta (qué datos guardamos y para
-      qué). El legal completo puede esperar a la semana de Navidad.
+      qué). Hecho el 26 nov el legal completo (`/aviso-legal`, `/privacidad`,
+      `/cookies`); pendiente de que Dani lo lea y lo confirme.
 - [ ] Supabase no se pausa (lo decide Dani, ver abajo).
 - [ ] Avisos de errores en producción, para enterarnos antes que la beta.
 
@@ -125,7 +143,7 @@ probado en Gmail y en móvil; Supabase con copias de seguridad.
 | 18 dic | Fecha de apertura: 11 o 18 de enero |
 | 18 dic | Especialidades al abrir: solo Biología o también otras con su temario del BOE |
 | 18 dic | Confirmar el correo al registrarse, sí o no |
-| 18 dic | Datos del titular para los textos legales |
+| ~~18 dic~~ | Datos del titular para los textos legales. Decidido el 26 nov: ALHAJA PRODUCCIONES SC; Dani dio por buenos los textos y los dos SQL ese día |
 
 ## Cambio respecto a lo hablado el 24 de noviembre
 

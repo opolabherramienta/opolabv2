@@ -4,6 +4,7 @@ import { madridDateKey } from "@/lib/study/sessions";
 import type { TodaySession } from "@/lib/study/today";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { friendlyError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +82,7 @@ export default async function HoyPage() {
     <div className="space-y-6">
       {loadError ? (
         <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
-          No se pudieron cargar tus sesiones: {loadError.message}
+          No se pudieron cargar tus sesiones. {friendlyError(loadError)}
         </p>
       ) : null}
 

@@ -59,7 +59,7 @@ const privacy =
 const closing = "Hasta entonces, a por el siguiente tema.";
 const signature = "Dani, de OpoLab";
 const legal =
-  "Recibes este correo porque te apuntaste a la lista de espera en opolab.net. Responsable: Daniel González López.";
+  "Recibes este correo porque te apuntaste a la lista de espera en opolab.net. Responsable: ALHAJA PRODUCCIONES SC (hola@alhajaproducciones.com).";
 
 const font = "font-family:Helvetica,Arial,sans-serif;";
 const p = `margin:0 0 16px;font-size:16px;line-height:26px;color:#3d375c;${font}`;

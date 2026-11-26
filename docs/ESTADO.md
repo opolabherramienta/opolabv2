@@ -28,12 +28,20 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
   y deja `/admin/lista-espera` para Navidad, al revés de lo acordado el 24
   de noviembre; Dani empezó por ese orden el mismo día 26. Las fechas
   siguen pendientes de que las confirme.
+- Para la próxima sesión, por este orden: 1) comprobar que los dos SQL
+  del día 26 están ejecutados (Dani dijo que están bien, no consta que
+  estén ejecutados) enviando un mensaje desde "Cuéntanos qué falla" y
+  mirándolo en `/admin/sugerencias`; 2) probar el borrado de cuenta con
+  una cuenta de usar y tirar; 3) mirar que las comprobaciones de GitHub
+  salen en verde; 4) simulación con los números de Silvia. Todo lo del
+  26 de noviembre está subido a `opolab-v2` y publicado en opolab.net.
 - Semana 1 (26 a 29 de noviembre): arreglos 1 a 7 hechos el día 26, sin
   commit y sin probar con cuenta real (la prueba de Dani está en "Dónde lo
   dejamos"). Del punto 8 están hechos "Llevar todos / ninguno" en Temas,
   la fecha de examen opcional, los primeros pasos en Inicio y marcar
-  "Estudiado" en Temas (este último, sin commit). Quedan las erratas y la
-  simulación con los números de Silvia.
+  "Estudiado" en Temas (subido en `86cb0a6`). Las erratas y la
+  traducción de errores están hechas, sin commit. Queda la simulación
+  con los números de Silvia.
 - Commit `cb3bfad` del 26 de noviembre en `opolab-v2`, subido y
   desplegado en opolab.net ese día (portada y `/login` responden,
   `/register` sigue cerrado). `package.json` y
@@ -104,12 +112,15 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 
 **3. Abrir el registro** (sin empezar)
 
-- [ ] Aviso legal, privacidad y cookies, con casilla en el registro.
-- [ ] Borrado de cuenta desde Ajustes.
+- [ ] Aviso legal, privacidad y cookies, con casilla en el registro
+      (escritos el 26 de noviembre; falta que Dani los confirme).
+- [ ] Borrado de cuenta desde Ajustes (hecho el 26 de noviembre; falta el
+      SQL y probarlo).
 - [ ] Decidir si se confirma el correo al registrarse (Dani).
 - [ ] Que Supabase no se pause: plan de pago o llamada periódica (Dani).
       Ya afecta: si se pausa, el formulario público deja de guardar.
-- [ ] Comprobaciones automáticas en GitHub y avisos de errores.
+- [ ] Comprobaciones automáticas en GitHub (hechas el 26 de noviembre,
+      sin estrenar) y avisos de errores (sin empezar).
 - [ ] Quitar `NEXT_PUBLIC_SITE_MODE=teaser` en Vercel el día que se abra.
 - [ ] Fusionar `opolab-v2` en `main`.
 
@@ -494,6 +505,97 @@ fechas de los repasos tras recalcular con un tema marcado (lo cubren las
 pruebas del planificador). Límite: los repasos no entran hasta que el
 usuario recalcula.
 
+Erratas y mensajes en inglés (26 de noviembre, sin commit):
+
+- `lib/errors.ts`, función `friendlyError`: convierte los errores de
+  Supabase y de red en una frase en castellano (credenciales incorrectas,
+  correo ya registrado, contraseña corta, sin conexión, sesión caducada,
+  sin permiso, demasiados intentos). Lo que no reconoce sale como
+  "Inténtalo de nuevo en un momento.". El texto original, en inglés y con
+  nombres de tablas, ya no llega a la pantalla: se escribe en la consola.
+- La usan las seis páginas privadas al cargar, las acciones de registro,
+  entrada, contraseña, configuración y plan, y Calendario, Temas y
+  Prácticos al guardar.
+- Erratas: "contrasena", "sesion", "Intentalo", "Supabase no devolvio…" y
+  "onboarding" en los mensajes. En el formulario de configuración,
+  "Priorizar prácticos" y "Preparación general" se leen con tilde; el
+  valor guardado en la base de datos sigue sin ella para no romper los
+  perfiles que ya existen.
+- Pruebas: una nueva de `friendlyError`, y la de seguridad del registro
+  comprueba ahora que el texto de Supabase no sale. Pasan las 62, tipos,
+  lint y build. Sin ver en pantalla (provocar un error de entrada exige
+  escribir una contraseña).
+- Queda del mismo apartado: los `console.error` de depuración con el
+  identificador del usuario en Calendario y Temas, y la página
+  `app/test-supabase`, que se quita en la limpieza.
+
+Sesión del 26 de noviembre, segunda parte (subida ese día). Dani pidió
+adelantar lo que no depende de Silvia. Pasan las 62 pruebas, tipos, lint y
+`npm run build`; visto en local en desarrollo y con la versión de producción
+(`npm run start`, configuración `opolab-prod` en `.claude/launch.json`).
+
+- Seguridad: `next.config.ts` manda cabeceras en todas las páginas (CSP,
+  `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`,
+  `Permissions-Policy`, HSTS) y quita `X-Powered-By`. La CSP solo admite
+  recursos del propio dominio y llamadas a `*.supabase.co`; si algún día se
+  añade analítica, un vídeo externo o fuentes de fuera, hay que abrirla ahí.
+  Con la versión de producción en local, portada, Inicio, Temas y
+  Calendario cargan sin avisos de CSP en consola. El registro exige ya 8
+  caracteres en el servidor, igual que el cambio de contraseña. Fuera los
+  `console.error` con el identificador del usuario y lo que enviaba.
+- Limpieza: borrada `app/test-supabase`. Página 404 propia
+  (`app/not-found.tsx`), página de error (`app/error.tsx`) y esqueleto de
+  carga de las pantallas privadas (`app/(private)/loading.tsx`). La portada
+  en modo próximamente titula "OpoLab · Abrimos en enero de 2027". Las
+  especialidades con menos de 20 temas salen como "(próximamente)" y no se
+  pueden elegir (`lib/onboarding/data.ts`); hoy solo se ofrece Biología y
+  Geología.
+- Icono: `app/icon.svg`, `app/favicon.ico` y `app/apple-icon.png`, con la
+  probeta del logo en blanco sobre el violeta de la marca y el líquido en
+  verde. Sustituye al de la plantilla.
+- Borrado de cuenta: tarjeta en Ajustes (`DeleteAccountCard`), que pide
+  escribir BORRAR, y acción `app/account/actions.ts`, que llama a la función
+  `delete_my_account()`. NO FUNCIONA hasta que Dani ejecute
+  `supabase/proposals/20261126_borrar_cuenta.sql`; mientras, responde "No
+  se pudo borrar la cuenta. No se ha eliminado nada". Sin probar de
+  principio a fin: hay que hacerlo con una cuenta de usar y tirar. La
+  cuenta admin no se puede borrar desde ahí.
+- "Cuéntanos qué falla": `/sugerencias` es ahora un formulario
+  (`FeedbackForm`), con un enlace al pie de todas las pantallas privadas
+  que recuerda desde cuál se escribe. Los mensajes se leen en
+  `/admin/sugerencias`. NO GUARDA hasta que Dani ejecute
+  `supabase/proposals/20261126_feedback.sql`; probado que, sin la tabla,
+  avisa con un mensaje claro y no borra lo escrito. Límite: 10 mensajes por
+  hora y cuenta.
+- GitHub: `.github/workflows/comprobaciones.yml` pasa lint, tipos, pruebas
+  (con `TZ=UTC`) y build en cada subida a `opolab-v2` o `main` y en cada
+  pull request. Sin estrenar: se verá en la primera subida. Si GitHub
+  rechaza esa subida por permisos, falta dar al acceso de git permiso para
+  tocar workflows.
+- Textos legales a nombre de ALHAJA PRODUCCIONES SC (datos en
+  `lib/legal.ts`): `/aviso-legal`, `/privacidad` y `/cookies`, enlazados en
+  el pie de la portada, de las pantallas de entrada y de las privadas. El
+  registro lleva casilla obligatoria de aceptación, comprobada en el
+  servidor. El aviso bajo el formulario de la lista de espera y el pie del
+  correo de bienvenida nombran ya a la sociedad y a
+  hola@alhajaproducciones.com (antes, Daniel González López y el Gmail).
+  Los ha redactado Claude, que no es abogado. Dani tiene que confirmar:
+  1. Que el responsable de la lista de espera pasa a ser la sociedad y que
+     las peticiones de datos van a hola@alhajaproducciones.com.
+  2. Plazos que Claude ha puesto por su cuenta: lista de espera, doce
+     meses como máximo; copias de seguridad, treinta días.
+  3. Que Supabase, Vercel y Resend son los únicos proveedores, y en qué
+     región está el proyecto de Supabase (el texto dice que algunos
+     proveedores están en Estados Unidos).
+  4. La edad mínima (14 años) y la frase de que no se usa analítica: si se
+     añade, hay que cambiar la política de cookies.
+  Dani los dio por buenos el 26 de noviembre ("los textos están bien"),
+  incluido el cambio de responsable, y se publicaron ese día. Sigue
+  siendo recomendable que los revise alguien que sepa antes de abrir el
+  registro.
+- Lista de lo que tiene que mirar Silvia, aparte de los fallos:
+  `docs/REVISION-SILVIA.md`.
+
 Corrección: `/dev-preview/calendario` existe (más arriba se dice que
 Calendario no tiene vista de ejemplo). Los arreglos 5 y 6 no se han mirado
 allí.
@@ -741,8 +843,9 @@ Revisado sin problemas: redirecciones de las rutas de autenticación,
   afecta a su propia cuenta (XP falsificable, abuso de almacenamiento);
   pesará con rankings o premium. Añadir límites de longitud en la base de
   datos y mover "completar" a una función del servidor.
-- Se enseñan al usuario los mensajes de error de Supabase tal cual (en
-  inglés y con nombres de columnas). Traducirlos y registrar el detalle.
+- (Arreglado el 26 de noviembre con `lib/errors.ts`.) Se enseñaban al
+  usuario los mensajes de error de Supabase tal cual (en inglés y con
+  nombres de columnas). Traducirlos y registrar el detalle.
 - Cambiar la contraseña desde Ajustes no pide la actual ni cierra las otras
   sesiones.
 - El registro acepta 6 caracteres (solo comprobado en el navegador) y el
@@ -786,7 +889,7 @@ Revisado sin problemas: redirecciones de las rutas de autenticación,
 - No se puede borrar un práctico ni restarle un intento.
 - En Calendario, repasos y simulacros salen como "Tema", sin duración y
   con el mismo color. Hoy ya los distingue.
-- Erratas y jerga: "contrasena", "sesion", "Intentalo", "Priorizar
+- (Arreglado el 26 de noviembre.) Erratas y jerga: "contrasena", "sesion", "Intentalo", "Priorizar
   practicos", "Supabase no devolvio…", "onboarding" en mensajes de error.
 - La racha cuenta días estudiados con hasta 6 de pausa, no días seguidos, y
   el texto no lo explica.

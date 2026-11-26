@@ -7,7 +7,12 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cuenta?: string | string[] }>;
+}) {
+  const accountDeleted = (await searchParams).cuenta === "borrada";
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,7 +24,11 @@ export default async function LoginPage() {
 
   return (
     <AuthShell
-      description="Entra para seguir donde lo dejaste."
+      description={
+        accountDeleted
+          ? "Tu cuenta y tus datos se han borrado. Gracias por haber probado OpoLab."
+          : "Entra para seguir donde lo dejaste."
+      }
       footer={
         <>
           <Link className="text-violet-700" href="/forgot-password">

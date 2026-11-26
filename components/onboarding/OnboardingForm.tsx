@@ -9,6 +9,7 @@ import { madridDateKey } from "@/lib/study/sessions";
 type CatalogOption = {
   id: string;
   name: string;
+  comingSoon?: boolean;
 };
 
 type UserOppositionProfile = {
@@ -52,6 +53,12 @@ const goalOptions = [
   "Preparar simulacros",
   "Preparacion general",
 ];
+
+// The stored values keep their old spelling; this is what the user reads.
+const goalLabels: Record<string, string> = {
+  "Priorizar practicos": "Priorizar prácticos",
+  "Preparacion general": "Preparación general",
+};
 
 function SelectField({
   children,
@@ -118,11 +125,17 @@ export function OnboardingForm({
           label="Especialidad"
           name="specialty_id"
         >
-          {specialties.map((specialty) => (
-            <option key={specialty.id} value={specialty.id}>
-              {specialty.name}
-            </option>
-          ))}
+          {specialties.map((specialty) => {
+            // Not offered yet, unless it is the one this account already has.
+            const locked = specialty.comingSoon === true && specialty.id !== profile?.specialty_id;
+
+            return (
+              <option disabled={locked} key={specialty.id} value={specialty.id}>
+                {specialty.name}
+                {specialty.comingSoon ? " (próximamente)" : ""}
+              </option>
+            );
+          })}
         </SelectField>
 
         <SelectField
@@ -165,7 +178,7 @@ export function OnboardingForm({
         >
           {goalOptions.map((goal) => (
             <option key={goal} value={goal}>
-              {goal}
+              {goalLabels[goal] ?? goal}
             </option>
           ))}
         </SelectField>

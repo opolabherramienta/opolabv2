@@ -9,6 +9,7 @@ import { loadCalendarTasks } from "@/lib/study/load";
 import { madridDateKey } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { friendlyError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -291,7 +292,7 @@ export default async function DashboardPage() {
       )}
       loadError={
         firstError
-          ? `No se pudieron cargar tus datos: ${firstError.message}`
+          ? `No se pudieron cargar tus datos. ${friendlyError(firstError)}`
           : null
       }
       oppositionDateLabel={formatLongDate(oppositionDateKey)}

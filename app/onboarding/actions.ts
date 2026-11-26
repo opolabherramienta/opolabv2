@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { friendlyError } from "@/lib/errors";
 
 type OnboardingActionState = {
   error: string;
@@ -41,7 +42,7 @@ async function saveOppositionProfile(formData: FormData, destination: string) {
   } = await supabase.auth.getUser();
 
   if (userError) {
-    return { error: `No se pudo comprobar la sesion: ${userError.message}` };
+    return { error: `No se pudo comprobar tu sesión. ${friendlyError(userError)}` };
   }
 
   if (!user) {
@@ -82,7 +83,7 @@ async function saveOppositionProfile(formData: FormData, destination: string) {
     !mainGoal ||
     availableDays.length === 0
   ) {
-    return { error: "Completa todos los campos principales del onboarding." };
+    return { error: "Completa todos los campos y elige al menos un día de estudio." };
   }
 
   // The exam date is optional: many people do not know it until the call is
@@ -132,7 +133,9 @@ async function saveOppositionProfile(formData: FormData, destination: string) {
   );
 
   if (error) {
-    return { error: `No se pudo guardar el onboarding: ${error.message}` };
+    console.error("Configuración:", error.message);
+
+    return { error: `No se pudo guardar tu configuración. ${friendlyError(error)}` };
   }
 
   redirect(destination);

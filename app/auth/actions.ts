@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { friendlyError } from "@/lib/errors";
 
 type AuthActionState = {
   error: string;
@@ -18,6 +19,8 @@ function getRequiredString(formData: FormData, field: string) {
   return value.trim();
 }
 
+const minPasswordLength = 8;
+
 export async function signUpAction(
   _prevState: AuthActionState,
   formData: FormData,
@@ -33,7 +36,21 @@ export async function signUpAction(
   const password = typeof passwordValue === "string" ? passwordValue : "";
 
   if (!fullName || !email || !password) {
-    return { error: "Completa nombre, email y contrasena." };
+    return { error: "Completa tu nombre, tu correo y la contraseña." };
+  }
+
+  // The same rule as when changing the password, checked here and not
+  // only in the browser.
+  if (password.length < minPasswordLength) {
+    return {
+      error: `La contraseña debe tener al menos ${minPasswordLength} caracteres.`,
+    };
+  }
+
+  if (formData.get("accept_terms") !== "on") {
+    return {
+      error: "Para crear la cuenta tienes que aceptar el aviso legal y la política de privacidad.",
+    };
   }
 
   const supabase = await createClient();
@@ -49,11 +66,13 @@ export async function signUpAction(
   });
 
   if (error) {
-    return { error: `No se pudo crear la cuenta: ${error.message}` };
+    console.error("Registro:", error.message);
+
+    return { error: `No se pudo crear la cuenta. ${friendlyError(error)}` };
   }
 
   if (!data.user) {
-    return { error: "No se pudo crear la cuenta. Intentalo de nuevo." };
+    return { error: "No se pudo crear la cuenta. Inténtalo de nuevo." };
   }
 
   // Profile creation belongs to the Auth database trigger, including when
@@ -77,7 +96,7 @@ export async function signInAction(
   const password = typeof passwordValue === "string" ? passwordValue : "";
 
   if (!email || !password) {
-    return { error: "Introduce email y contrasena." };
+    return { error: "Escribe tu correo y tu contraseña." };
   }
 
   const supabase = await createClient();
@@ -87,7 +106,9 @@ export async function signInAction(
   });
 
   if (error) {
-    return { error: `No se pudo iniciar sesion: ${error.message}` };
+    console.error("Inicio de sesión:", error.message);
+
+    return { error: `No se pudo iniciar sesión. ${friendlyError(error)}` };
   }
 
   redirect("/dashboard");

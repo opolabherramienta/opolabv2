@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LegalLinks } from "@/components/legal/LegalPage";
 import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { Ball, type BallState } from "@/components/ui/Ball";
 import { Button } from "@/components/ui/Button";
@@ -342,6 +343,7 @@ export function Teaser() {
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t-2 border-slate-200 bg-white px-5 py-6 text-sm font-medium text-slate-500">
         <Logo height={30} />
         <p>Hecho por y para opositores.</p>
+        <LegalLinks />
         <Link className="font-bold text-violet-700" href="/login">
           Ya tengo acceso
         </Link>

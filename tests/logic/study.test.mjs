@@ -374,6 +374,33 @@ test('sessions the plan keeps take up their day', () => {
   assert.ok(!tasks.some((task) => task.task_date === '2026-11-24'));
 });
 
+// Error messages
+const { friendlyError } = load('lib/errors.ts');
+
+test('errors from Supabase reach the user in Spanish, never as raw text', () => {
+  assert.equal(friendlyError({ message: 'Invalid login credentials' }), 'El correo o la contraseña no son correctos.');
+  assert.equal(friendlyError(new Error('User already registered')), 'Ya hay una cuenta con ese correo.');
+  assert.equal(
+    friendlyError({ message: 'Password should be at least 6 characters.' }),
+    'La contraseña debe tener al menos 6 caracteres.',
+  );
+  assert.match(friendlyError('TypeError: Failed to fetch'), /conexión/);
+  assert.match(friendlyError({ message: 'new row violates row-level security policy for table "calendar_tasks"' }), /permiso/);
+  assert.match(friendlyError({ message: 'JWT expired' }), /sesión ha caducado/);
+
+  // Anything unknown, with its table and column names, becomes a neutral sentence.
+  const unknown = friendlyError({ message: 'column user_practicals.last_worked_date does not exist' });
+  assert.equal(unknown, 'Inténtalo de nuevo en un momento.');
+  assert.equal(friendlyError(null), unknown);
+  assert.equal(friendlyError({ message: 42 }), unknown);
+
+  // An error rethrown with a friendly message keeps it.
+  for (const raw of ['Invalid login credentials', 'Password should be at least 8 characters.', 'boom']) {
+    const once = friendlyError({ message: raw });
+    assert.equal(friendlyError(new Error(once)), once);
+  }
+});
+
 // Deleting a session
 const { revertsProgressOnDelete, studiedSessionChange, STUDIED_IN_TOPICS_NOTE } = load('lib/study/progress-sync.ts');
 

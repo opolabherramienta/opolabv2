@@ -11,8 +11,10 @@ function load(file, mocks) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   const exports = {};
-  vm.runInNewContext(js, { exports, URL, process: { env: {} }, require(name) {
+  vm.runInNewContext(js, { exports, URL, Set, console: { error() {} }, process: { env: {} }, require(name) {
     if (name === 'server-only') return {};
+    // Pure text helper with no dependencies: use the real one.
+    if (name === '@/lib/errors') return load('lib/errors.ts', {});
     if (!(name in mocks)) throw new Error(`Unmocked dependency: ${name}`);
     return mocks[name];
   }});
@@ -32,7 +34,7 @@ function authActions(client) {
     '@/lib/supabase/server': { createClient: async () => client },
   });
 }
-const registration = { full_name: ' Student ', email: 'TEST@example.com', password: ' pass word ' };
+const registration = { full_name: ' Student ', email: 'TEST@example.com', password: ' pass word ', accept_terms: 'on' };
 test('signup without a session asks for confirmation and never writes profiles', async () => {
   let payload;
   const actions = authActions({ auth: { signUp: async (input) => {
@@ -54,7 +56,10 @@ test('signup with immediate session goes to onboarding without profile upsert', 
 });
 test('signup failure returns an error', async () => {
   const actions = authActions({ auth: { signUp: async () => ({ data: {}, error: { message: 'failed' } }) }});
-  assert.match((await actions.signUpAction({}, form(registration))).error, /failed/);
+  const signUpError = (await actions.signUpAction({}, form(registration))).error;
+  assert.match(signUpError, /No se pudo crear la cuenta/);
+  // The raw text from Supabase never reaches the user.
+  assert.doesNotMatch(signUpError, /failed/);
 });
 test('incomplete signup does not contact Auth', async () => {
   assert.match((await authActions({}).signUpAction({}, form({ email: 'a' }))).error, /Completa/);
@@ -153,11 +158,11 @@ for (const success of [false, true]) {
       `http://localhost:3000/${success ? 'onboarding' : 'login?confirmation=failed'}`);
   });
 }
-test('all admin entry points and diagnostic page enforce server authorization', () => {
+test('all admin entry points enforce server authorization', () => {
   for (const file of [
     'app/admin/layout.tsx', 'app/admin/page.tsx', 'app/admin/usuarios/page.tsx',
     'app/admin/temas/page.tsx', 'app/admin/especialidades/page.tsx',
-    'app/admin/sugerencias/page.tsx', 'app/test-supabase/page.tsx',
+    'app/admin/sugerencias/page.tsx',
   ]) assert.match(fs.readFileSync(file, 'utf8'), /await requireAdmin\(\)/, file);
 });
 

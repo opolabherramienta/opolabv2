@@ -13,6 +13,7 @@ import { loadCalendarTasks } from "@/lib/study/load";
 import { replacePlan } from "@/lib/study/replace-plan";
 import { getSessionKind } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/server";
+import { friendlyError } from "@/lib/errors";
 
 export type PlanActionState = {
   error: string;
@@ -88,7 +89,7 @@ export async function generatePlanAction(
 
   if (profileResult.error) {
     return {
-      error: `No se pudo leer tu configuración: ${profileResult.error.message}`,
+      error: `No se pudo leer tu configuración. ${friendlyError(profileResult.error)}`,
       summary: null,
     };
   }
@@ -127,7 +128,7 @@ export async function generatePlanAction(
 
   if (loadError) {
     return {
-      error: `No se pudieron leer tus temas y prácticos: ${loadError.message}`,
+      error: `No se pudieron leer tus temas y prácticos. ${friendlyError(loadError)}`,
       summary: null,
     };
   }
@@ -345,13 +346,16 @@ export async function generatePlanAction(
     revalidatePath("/hoy");
     revalidatePath("/progreso");
 
+    console.error("Plan:", swap.state, swap.message);
+    const why = friendlyError(swap.message);
+
     return {
       error:
         swap.state === "kept-old"
-          ? `No se pudo guardar el plan nuevo: ${swap.message}. Tu plan anterior sigue como estaba.`
+          ? `No se pudo guardar el plan nuevo. ${why} Tu plan anterior sigue como estaba.`
           : swap.state === "mixed"
-            ? `No se pudo guardar el plan nuevo: ${swap.message}. Han quedado sesiones a medias: vuelve a crear el plan para limpiarlas.`
-            : `El plan nuevo está guardado, pero no se pudieron quitar sesiones del anterior: ${swap.message}. Vuelve a crear el plan para limpiarlas.`,
+            ? `No se pudo guardar el plan nuevo. ${why} Han quedado sesiones a medias: vuelve a crear el plan para limpiarlas.`
+            : `El plan nuevo está guardado, pero no se pudieron quitar sesiones del anterior. ${why} Vuelve a crear el plan para limpiarlas.`,
       summary: null,
     };
   }

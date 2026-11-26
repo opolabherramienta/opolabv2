@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { signUpAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/Button";
@@ -35,12 +36,31 @@ export function RegisterForm() {
       <Input
         id="password"
         label="Contraseña"
-        minLength={6}
+        minLength={8}
         name="password"
-        placeholder="Elige una contraseña"
+        placeholder="Al menos 8 caracteres"
         required
         type="password"
       />
+      <label className="flex items-start gap-2.5 text-sm leading-5 text-slate-600">
+        <input
+          className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 accent-violet-600"
+          name="accept_terms"
+          required
+          type="checkbox"
+        />
+        <span>
+          He leído y acepto el{" "}
+          <Link className="font-semibold text-violet-700 underline" href="/aviso-legal" target="_blank">
+            aviso legal
+          </Link>{" "}
+          y la{" "}
+          <Link className="font-semibold text-violet-700 underline" href="/privacidad" target="_blank">
+            política de privacidad
+          </Link>
+          .
+        </span>
+      </label>
       {state.error ? (
         <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
           {state.error}

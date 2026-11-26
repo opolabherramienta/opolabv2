@@ -8,6 +8,7 @@ import { fieldClasses } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/Progress";
 import { StatCard } from "@/components/ui/StatCard";
 import { createClient } from "@/lib/supabase/client";
+import { friendlyError } from "@/lib/errors";
 
 type PracticalStatus = "not_started" | "worked" | "mastered";
 
@@ -84,17 +85,9 @@ function buildPayload(
   };
 }
 
+// What to tell the user when a save fails: never the raw text.
 function getSupabaseErrorMessage(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message;
-  }
-
-  return "No se pudo guardar el práctico.";
+  return friendlyError(error);
 }
 
 function getStatusLabel(status: PracticalStatus) {
@@ -180,7 +173,7 @@ export function PracticalsClient({
       }
 
       if (!insertResult.data) {
-        throw new Error("Supabase no devolvió el práctico creado.");
+        throw new Error("El servidor no devolvió el práctico creado.");
       }
 
       setPracticals((current) => [
@@ -192,11 +185,8 @@ export function PracticalsClient({
       setFormOpen(false);
     } catch (saveError) {
       console.error("Error guardando práctico:", saveError);
-      console.error("Payload enviado:", payload);
-      console.error("User ID:", userId);
-      console.error("Practical ID:", null);
 
-      setError(`No se pudo crear el práctico: ${getSupabaseErrorMessage(saveError)}`);
+      setError(`No se pudo crear el práctico. ${getSupabaseErrorMessage(saveError)}`);
     } finally {
       setCreating(false);
     }
@@ -239,7 +229,7 @@ export function PracticalsClient({
       }
 
       if (!updateResult.data) {
-        throw new Error("Supabase no devolvió el práctico actualizado.");
+        throw new Error("El servidor no devolvió el práctico actualizado.");
       }
 
       setPracticals((current) =>
@@ -251,13 +241,10 @@ export function PracticalsClient({
       );
     } catch (saveError) {
       console.error("Error guardando práctico:", saveError);
-      console.error("Payload enviado:", payload);
-      console.error("User ID:", userId);
-      console.error("Practical ID:", practicalId);
 
       setPracticals(previousPracticals);
       setError(
-        `No se pudo guardar el cambio: ${getSupabaseErrorMessage(saveError)}`,
+        `No se pudo guardar el cambio. ${getSupabaseErrorMessage(saveError)}`,
       );
     } finally {
       setSavingIds((current) => {

@@ -16,6 +16,7 @@ import { ConfettiBurst, useConfetti } from "@/components/ui/Confetti";
 import { Icon } from "@/components/ui/Icon";
 import { fieldClasses } from "@/components/ui/Input";
 import { Chip, ProgressRing } from "@/components/ui/Progress";
+import { friendlyError } from "@/lib/errors";
 
 export type TopicItem = {
   id: string | null;
@@ -121,17 +122,9 @@ function buildPayload(userId: string, topic: TopicItem): UserTopicPayload {
   };
 }
 
+// What to tell the user when a save fails: never the raw text.
 function getSupabaseErrorMessage(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message;
-  }
-
-  return "No se pudo guardar el tema.";
+  return friendlyError(error);
 }
 
 const selectColumns = [
@@ -196,7 +189,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
       }
 
       if (!updateResult.data) {
-        throw new Error("Supabase no devolvio el tema actualizado.");
+        throw new Error("El servidor no devolvió el tema actualizado.");
       }
 
       return updateResult.data as unknown as UserTopicRow;
@@ -228,7 +221,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
       }
 
       if (!updateResult.data) {
-        throw new Error("Supabase no devolvio el tema actualizado.");
+        throw new Error("El servidor no devolvió el tema actualizado.");
       }
 
       return updateResult.data as unknown as UserTopicRow;
@@ -245,7 +238,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
     }
 
     if (!insertResult.data) {
-      throw new Error("Supabase no devolvio el tema creado.");
+      throw new Error("El servidor no devolvió el tema creado.");
     }
 
     return insertResult.data as unknown as UserTopicRow;
@@ -314,16 +307,12 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
         }
       }
     } catch (saveError) {
-      const payload = buildPayload(userId, nextTopic);
       const message = getSupabaseErrorMessage(saveError);
 
       console.error("Error guardando tema:", saveError);
-      console.error("Payload enviado:", payload);
-      console.error("User ID:", userId);
-      console.error("Topic ID:", baseTopicId);
 
       setTopics(previousTopics);
-      setError(`No se pudo guardar el cambio: ${message}`);
+      setError(`No se pudo guardar el cambio. ${message}`);
     } finally {
       setSavingIds((current) => {
         const next = new Set(current);
@@ -423,7 +412,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
       console.error("Error guardando la selección de temas:", saveError);
       setTopics(previousTopics);
       setError(
-        `No se pudo guardar la selección: ${getSupabaseErrorMessage(saveError)}. Recarga la página para ver cómo ha quedado.`,
+        `No se pudo guardar la selección. ${getSupabaseErrorMessage(saveError)} Recarga la página para ver cómo ha quedado.`,
       );
     } finally {
       setBulkSaving(false);

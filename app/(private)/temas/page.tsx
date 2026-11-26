@@ -2,6 +2,7 @@
 import { TopicsClient, type TopicItem } from "@/components/topics/topics-client";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { friendlyError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ function getLoadError(errors: Array<{ message: string } | null>) {
     return null;
   }
 
-  return `No se pudieron cargar los temas: ${error.message}`;
+  return `No se pudieron cargar los temas. ${friendlyError(error)}`;
 }
 
 export default async function TemasPage() {

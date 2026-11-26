@@ -9,6 +9,7 @@ import { Chip } from "@/components/ui/Progress";
 import { getCompletionXp } from "@/lib/study/gamification";
 import { revertsProgressOnDelete, syncSessionProgress } from "@/lib/study/progress-sync";
 import { createClient } from "@/lib/supabase/client";
+import { friendlyError } from "@/lib/errors";
 
 type CalendarTaskType = "study_topic" | "practical" | "rest";
 type CalendarTaskStatus = "pending" | "completed" | "cancelled";
@@ -162,17 +163,9 @@ function buildPayload(
   };
 }
 
+// What to tell the user when a save fails: never the raw text.
 function getSupabaseErrorMessage(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message;
-  }
-
-  return "No se pudo guardar la sesión.";
+  return friendlyError(error);
 }
 
 function getTaskTypeLabel(taskType: CalendarTaskType) {
@@ -654,7 +647,7 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
       }
 
       if (!insertResult.data) {
-        throw new Error("Supabase no devolvio la sesión creada.");
+        throw new Error("El servidor no devolvió la sesión creada.");
       }
 
       const createdSession = rowToSession(insertResult.data as unknown as CalendarTaskRow);
@@ -674,11 +667,8 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
       setIsFormOpen(false);
     } catch (saveError) {
       console.error("Error guardando sesión:", saveError);
-      console.error("Payload enviado:", payload);
-      console.error("User ID:", userId);
-      console.error("Session ID:", null);
 
-      setError(`No se pudo crear la sesión: ${getSupabaseErrorMessage(saveError)}`);
+      setError(`No se pudo crear la sesión. ${getSupabaseErrorMessage(saveError)}`);
     } finally {
       setCreating(false);
     }
@@ -727,7 +717,7 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
       }
 
       if (!updateResult.data) {
-        throw new Error("Supabase no devolvio la sesión actualizada.");
+        throw new Error("El servidor no devolvió la sesión actualizada.");
       }
 
       setSessions((current) =>
@@ -748,13 +738,10 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
       }
     } catch (saveError) {
       console.error("Error guardando sesión:", saveError);
-      console.error("Payload enviado:", payload);
-      console.error("User ID:", userId);
-      console.error("Session ID:", sessionId);
 
       setSessions(previousSessions);
       setError(
-        `No se pudo guardar el cambio: ${getSupabaseErrorMessage(saveError)}`,
+        `No se pudo guardar el cambio. ${getSupabaseErrorMessage(saveError)}`,
       );
     } finally {
       setSavingIds((current) => {
@@ -787,7 +774,7 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
       }
 
       if (!deleteResult.data) {
-        throw new Error("Supabase no devolvio la sesión eliminada.");
+        throw new Error("El servidor no devolvió la sesión eliminada.");
       }
 
       if (editingId === sessionId) {
@@ -801,13 +788,10 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
       }
     } catch (saveError) {
       console.error("Error guardando sesión:", saveError);
-      console.error("Payload enviado:", { deleted: true });
-      console.error("User ID:", userId);
-      console.error("Session ID:", sessionId);
 
       setSessions(previousSessions);
       setError(
-        `No se pudo eliminar la sesión: ${getSupabaseErrorMessage(saveError)}`,
+        `No se pudo eliminar la sesión. ${getSupabaseErrorMessage(saveError)}`,
       );
     } finally {
       setDeletingIds((current) => {

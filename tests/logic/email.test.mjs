@@ -24,7 +24,7 @@ test('la bienvenida dice lo mismo en HTML y en texto', () => {
     'El planificador será gratis',
     'Coach de pago',
     'responde a este mensaje',
-    'Responsable: Daniel González López',
+    'Responsable: ALHAJA PRODUCCIONES SC',
   ]) {
     assert.ok(html.includes(phrase), `falta en el HTML: ${phrase}`);
     assert.ok(text.includes(phrase), `falta en el texto: ${phrase}`);

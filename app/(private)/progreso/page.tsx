@@ -3,6 +3,7 @@ import { loadCalendarTasks } from "@/lib/study/load";
 import { madridDateKey } from "@/lib/study/sessions";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { friendlyError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ function getLoadError(errors: Array<{ message: string } | null>) {
     return null;
   }
 
-  return `No se pudieron cargar los datos de progreso: ${error.message}`;
+  return `No se pudieron cargar los datos de progreso. ${friendlyError(error)}`;
 }
 
 function safePercent(value: number, total: number) {
