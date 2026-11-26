@@ -1,7 +1,7 @@
 # OpoLab Planner: estado y siguientes pasos
 
 Documento de relevo. Una sesión nueva debe leer esto antes de tocar nada.
-Última actualización: 24 de noviembre de 2026.
+Última actualización: 26 de noviembre de 2026.
 
 ## Qué es
 
@@ -23,10 +23,23 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 **Lo siguiente**
 
 - Hoja de ruta con fechas hasta la apertura (11 de enero de 2027):
-  `docs/ROADMAP-LANZAMIENTO.md`, propuesta el 26 de noviembre, pendiente de
-  que Dani la confirme. Se revisa con `/lanzamiento`. Propone hacer primero
-  los arreglos del planificador (bloque 2) y dejar `/admin/lista-espera`
-  para Navidad, al revés de lo acordado el 24 de noviembre.
+  `docs/ROADMAP-LANZAMIENTO.md`, propuesta el 26 de noviembre. Se revisa
+  con `/lanzamiento`. Hace primero los arreglos del planificador (bloque 2)
+  y deja `/admin/lista-espera` para Navidad, al revés de lo acordado el 24
+  de noviembre; Dani empezó por ese orden el mismo día 26. Las fechas
+  siguen pendientes de que las confirme.
+- Semana 1 (26 a 29 de noviembre): arreglos 1 a 7 hechos el día 26, sin
+  commit y sin probar con cuenta real (la prueba de Dani está en "Dónde lo
+  dejamos"). Del punto 8 están hechos "Llevar todos / ninguno" en Temas,
+  la fecha de examen opcional y los primeros pasos en Inicio; sigue marcar
+  "Estudiado" en Temas, y después las erratas y la simulación con los
+  números de Silvia.
+- Commit del 26 de noviembre en `opolab-v2` con todo lo anterior, sin
+  subir: al subirlo sale a opolab.net. `package.json` y
+  `package-lock.json` (sonner y recharts, de otra sesión) quedan fuera.
+- Prueba en la app de los arreglos hecha por Claude el 26 de noviembre con
+  una cuenta de prueba: bien en todo salvo el arreglo 1, que no se pudo
+  reproducir (detalle en "Dónde lo dejamos").
 - Correo de bienvenida: funcionando en opolab.net desde el 24 de noviembre
   (detalle en el bloque 1).
 
@@ -264,8 +277,9 @@ Dani pidió arreglar los fallos del análisis y después hacer la limpieza. Se
 cortó a mitad de los arreglos. Orden para retomar: terminar "Falta", luego
 el paso 2 (limpieza), que está sin empezar. El 24 de noviembre no se tocó
 nada de esto: la sesión fue la página pública, Vercel, el dominio y el
-límite del formulario. Antes de estos arreglos va la pantalla
-`/admin/lista-espera` (ver el mapa de arriba).
+límite del formulario. El 26 de noviembre Dani empezó la semana 1 de la
+hoja de ruta por estos arreglos, así que `/admin/lista-espera` queda para
+Navidad, como propone la hoja de ruta.
 
 Hecho, sin probar en la app con cuenta real:
 
@@ -280,24 +294,224 @@ Hecho, sin probar en la app con cuenta real:
 - Progreso cuenta solo los temas elegidos de la especialidad actual y mide
   las sesiones cumplidas sobre las que tocaban hasta hoy.
 - Recalcular borra también las sesiones automáticas atrasadas.
+- Arreglo 1, repaso atrasado que vuelve (26 de noviembre, sin commit):
+  `app/plan/actions.ts` calcula el día del último repaso completado de cada
+  tema y lo pasa como `lastReviewOnKey` en `PlanTopic`. El planificador da
+  por hechos los repasos que vencían ese día o antes, y cuenta desde ese día
+  las dos semanas hasta el siguiente repaso de mantenimiento. Esto último
+  cubre también dos casos que no estaban apuntados: el tema con los cuatro
+  repasos hechos y el tema marcado como estudiado en Temas, a los que el
+  repaso de mantenimiento recién hecho les volvía a salir al recalcular.
+  Prueba nueva en `tests/logic/study.test.mjs` (falla sin el arreglo); pasan
+  las 50 pruebas, tipos, lint y `npm run build`. Para verlo en la app:
+  completar un repaso atrasado en Hoy, recalcular y comprobar que no vuelve.
 
-Falta, por este orden:
+- Arreglo 2, plan con pocas horas (26 de noviembre, sin commit), en
+  `lib/study/planner.ts`:
+  - Cada semana tiene como tope las horas semanales (`weekRemaining`). La
+    semana de hoy y la del examen, que suelen ser más cortas, reciben su
+    parte proporcional. Única excepción: una semana vacía admite una sesión
+    más larga que su tope, para que con media hora a la semana el plan no
+    se quede sin temas.
+  - Con poco tiempo van primero los temas. El práctico semanal solo entra
+    si después queda sitio para un tema con sus cuatro repasos (con los
+    valores por defecto, desde 4,5 h a la semana); el simulacro, si además
+    cabe él (desde 4 h sin prácticos, 5,5 h con ellos). Cuando ya no quedan
+    temas nuevos, entran en cuanto caben.
+  - Si hay prácticos y ninguno ha cabido, el resumen lo dice
+    (`practicalsLeftOut`) y la tarjeta del plan enseña un aviso
+    (`components/plan/GeneratePlanCard.tsx`). El texto es de Claude: que
+    Dani lo revise.
+  - `reachesExam` pasa a falso si quedan temas sin colocar antes del
+    examen. Sin fecha de examen, o con el examen a más de 40 semanas, solo
+    "quedan para más adelante".
+  - Las horas que "harían falta" cuentan siempre el práctico semanal, para
+    que la cifra no suba cuando el usuario sube sus horas.
+  - Simulado con 20 temas y examen en junio: antes, con 1, 2 o 3 horas el
+    plan metía entre 3 y 5 horas cada semana; ahora ninguna semana pasa del
+    tope. Con 12 horas y 75 temas el plan sale igual que antes. Cuatro
+    pruebas nuevas; pasan las 54, tipos, lint y `npm run build`.
+  - Para verlo en la app: poner 2 horas a la semana en Ajustes, recalcular
+    y mirar en Calendario que ninguna semana pasa de 2 horas y que sale el
+    aviso de los prácticos.
+  - Visto al simular, sin tocar: con los valores por defecto (12 h, 75
+    temas, examen en junio) el plan dice "no llegas, harían falta 14 horas"
+    aunque coloca los 75 temas, el último cuatro días antes del examen. Es
+    lo que hay que mirar en la simulación con los números de Silvia.
 
-1. Repaso atrasado que vuelve: pasar al planificador la fecha del último
-   repaso completado (`lastReviewOnKey` en `PlanTopic`) y dar por hechos los
-   repasos que vencían antes. Calcularla en `app/plan/actions.ts`.
-2. Plan con pocas horas: presupuesto semanal real en `fits()` (hoy un día
-   vacío admite cualquier sesión), prácticos solo si caben, y `reachesExam`
-   en falso si quedan temas sin colocar.
-3. Rotaciones al recalcular: ordenar prácticos por `last_worked_date` y
-   simulacros por `simulation_count`.
-4. Sustituir el plan sin dejarlo a medias: insertar el nuevo antes de borrar
-   el viejo (por id) y deshacer si falla.
-5. El "+XP" al completar: usar `getCompletionXp` (ya escrita en
-   `gamification.ts`, sin usar) en Hoy y Calendario.
-6. Borrar una sesión completada debe restar su repaso (llamar a
-   `syncSessionProgress` con -1 en `deleteSession`).
-7. La tarjeta del plan en Inicio debe seguir a la vista tras crearlo.
+- Arreglo 3, rotaciones al recalcular (26 de noviembre, sin commit):
+  - Prácticos: `app/plan/actions.ts` lee `last_worked_date` y
+    `times_worked` y el planificador empieza por el que lleva más tiempo
+    sin tocar (primero los nunca trabajados; a igualdad, el de menos
+    intentos).
+  - Simulacros: cada uno va al tema estudiado con menos simulacros
+    (`simulation_count` más los que reparte el propio plan); a igualdad, el
+    estudiado antes.
+  - Prueba nueva (falla sin el arreglo); pasan las 55, tipos, lint y
+    `npm run build`.
+  - Límite conocido: `last_worked_date` solo se guarda al completar un
+    práctico desde Hoy o Calendario. Sumar un intento a mano en Prácticos
+    no la toca, así que ahí solo cuenta el número de intentos.
+  - Sin comprobar contra la base de datos real: que las columnas
+    `last_worked_date` y `times_worked` de `user_practicals` se leen bien
+    (el esquema no está en el repositorio; el código ya las escribía). Si
+    faltara alguna, crear el plan daría "No se pudieron leer tus temas y
+    prácticos". Para verlo en la app: completar el práctico de esta semana,
+    recalcular y comprobar que el siguiente es otro.
+
+- Arreglo 4, sustituir el plan sin dejarlo a medias (26 de noviembre, sin
+  commit): `lib/study/replace-plan.ts`, usado desde `app/plan/actions.ts`.
+  - Primero se guarda el plan nuevo entero y solo después se borran, por
+    id, las sesiones pendientes del anterior. El calendario nunca se queda
+    vacío.
+  - Si falla el guardado, se borra lo que se hubiera escrito del nuevo y el
+    plan anterior queda como estaba ("Tu plan anterior sigue como estaba").
+  - Si falla el borrado del anterior (se reintenta una vez), el plan nuevo
+    queda entero y sobran sesiones viejas; el mensaje pide volver a crear
+    el plan, que las limpia.
+  - Tres pruebas nuevas con una base de datos simulada que falla a
+    propósito; pasan las 58, tipos, lint y `npm run build`.
+  - Sin comprobar contra Supabase: el guardado pide ahora los id de las
+    filas nuevas (`insert(...).select("id")`), que necesita permiso de
+    lectura sobre las filas propias; la RLS lo da, pero no se ha ejecutado.
+    Para verlo en la app: recalcular con plan ya creado y comprobar que no
+    quedan sesiones duplicadas ni desaparece nada.
+  - No resuelto: dos pulsaciones a la vez desde dos pestañas siguen
+    pudiendo duplicar el plan (el botón se desactiva mientras guarda, así
+    que hace falta otra pestaña). Volver a crear el plan lo limpia. El
+    arreglo de fondo es una función SQL en una transacción, que tendría que
+    ejecutar Dani; apuntado para después de la beta si no molesta antes.
+
+- Arreglo 5, el "+XP" al completar (26 de noviembre, sin commit): Hoy
+  (`components/today/today-client.tsx`) y Calendario
+  (`components/calendar/calendar-client.tsx`) enseñan lo que de verdad sube
+  el total, con `getCompletionXp`. Antes usaban la racha de antes de
+  completar, así que el día que la racha llegaba a 5 enseñaban 20 y se
+  sumaban 25. Prueba nueva; pasan las 59, tipos, lint y `npm run build`.
+  Visto en `/dev-preview/hoy`: al completar un tema sale "+25 XP", sin
+  errores en consola. Sin ver: Calendario (no tiene vista de ejemplo) y una
+  cuenta real.
+
+- Arreglo 6, borrar una sesión completada resta su progreso (26 de
+  noviembre, sin commit): `deleteSession` en
+  `components/calendar/calendar-client.tsx` llama a `syncSessionProgress`
+  con -1 cuando `revertsProgressOnDelete` (`lib/study/progress-sync.ts`)
+  dice que toca. Borrar un repaso, un simulacro o un práctico completados
+  resta uno a su contador, igual que desmarcarlos. Borrar una sesión de
+  estudio completada quita "estudiado" al tema solo si no queda otra sesión
+  de estudio completada de ese tema (criterio de Claude, para no perder el
+  estudiado al limpiar una sesión repetida). Si el borrado va bien y falla
+  el progreso, el aviso dice "La sesión se ha eliminado, pero…". Prueba
+  nueva de la decisión; pasan las 60, tipos, lint y `npm run build`. Sin
+  ver en pantalla: Calendario no tiene vista de ejemplo. Para verlo en la
+  app: completar un repaso, borrarlo en Calendario y mirar en Temas que el
+  contador de repasos baja.
+  Sigue pendiente de la misma debilidad: desmarcar una sesión de estudio
+  quita "estudiado" aunque el tema se marcara a mano en Temas, y Temas
+  abierto en otra pestaña puede pisar el contador.
+
+- Arreglo 7, la tarjeta del plan en Inicio (26 de noviembre, sin commit):
+  `components/dashboard/dashboard-view.tsx` enseña siempre
+  `GeneratePlanCard`, como Calendario. Antes solo salía sin plan, así que
+  al crearlo desaparecía con su resumen y sus avisos ("no llegas", "no
+  caben prácticos"). Con plan, la tarjeta es "Tu plan de estudio" con el
+  botón "Recalcular plan". Visto en `/dev-preview/inicio`. Sin ver: crear
+  el plan con una cuenta real y que el resumen se quede en pantalla.
+
+Prueba de Dani en la app para dar por buenos los siete (unos 10 minutos,
+con su cuenta, en local o en opolab.net cuando esté subido):
+
+1. Inicio > "Crear mi plan" (o "Recalcular plan"): el resumen se queda en
+   pantalla (7) y no hay error al leer los prácticos (3).
+2. Calendario: no hay sesiones duplicadas ni ha desaparecido nada (4).
+3. Hoy: completar un tema y mirar que el "+XP" coincide con lo que sube el
+   total en Inicio (5).
+4. Completar un repaso atrasado, recalcular y ver que no vuelve (1).
+5. Completar el práctico de la semana, recalcular y ver que el siguiente
+   es otro (3).
+6. Calendario: borrar un repaso completado y ver en Temas que su contador
+   baja (6).
+7. Ajustes: poner 2 horas a la semana, recalcular y ver que ninguna semana
+   pasa de 2 horas y que sale el aviso de los prácticos (2). Volver a
+   dejar las horas como estaban y recalcular.
+
+Punto 8, "Llevar todos / ninguno" en Temas (26 de noviembre, sin commit):
+`components/topics/topics-client.tsx`, función `selectAll`. Dos botones en
+la tarjeta de arriba: "Llevar todos" (o "Llevar todos los demás" si ya hay
+alguno) y "No llevar ninguno", que pide confirmación. Solo cambia
+`is_selected`; resumen, estudiado, repasos y notas no se tocan. Guarda en
+bloque: actualiza por id las filas que existen e inserta las que faltan
+(no usa `upsert` porque no está comprobado que `user_topics` tenga clave
+única por usuario y tema). Visto en `/dev-preview/temas`, escritorio y
+móvil. Sin probar: el guardado, que necesita una cuenta real. Falta del
+mismo apartado: elegir tocando las bolas del bombo (no se ha hecho; hoy la
+bola abre el tema).
+
+Punto 8, fecha de examen opcional (26 de noviembre, sin commit):
+`app/onboarding/actions.ts` y `components/onboarding/OnboardingForm.tsx`
+(el mismo formulario sirve para el onboarding y para Ajustes). El campo
+pasa a "Fecha del examen (si la sabes)", ya no es obligatorio y el
+calendario del navegador no deja elegir días pasados. El servidor guarda
+`null` si viene vacía y rechaza una fecha pasada o mal escrita con un
+mensaje propio. Inicio, sin fecha, dice "Sin fecha de examen" y que el plan
+funciona igual. Probado con la cuenta de prueba en Ajustes: guardar sin
+fecha (la columna `opposition_date` admite nulos), crear el plan sin fecha
+(447 sesiones hasta el horizonte de 40 semanas), rechazo de una fecha
+pasada, y vuelta al 1 de junio. Sin probar: el onboarding con una cuenta
+recién creada. Ojo: quien ya tenga guardada una fecha pasada no podrá
+guardar otros ajustes hasta cambiarla o vaciarla; el mensaje lo explica.
+
+Punto 8, primeros pasos en Inicio (26 de noviembre):
+`components/dashboard/dashboard-view.tsx`, componente `FirstSteps`.
+Mientras no hay plan, Inicio enseña "Tus primeros pasos": 1) elegir temas,
+2) apuntar prácticos (opcional), 3) crear el plan. Cada paso hecho sale con
+su marca y el que toca, resaltado con su botón. La tarjeta "Crear mi plan"
+solo aparece cuando hay temas o prácticos, así que ya no se puede pulsar
+para recibir "elige primero los temas". Con plan, la lista desaparece.
+Vistas de ejemplo nuevas: `/dev-preview/inicio?paso=1`, `?paso=2` y
+`?paso=3` (sin parámetro, la de siempre, que usa el vídeo). Visto en
+escritorio y móvil. Sin probar: una cuenta recién creada de principio a
+fin. No se ha tocado el onboarding (sigue pidiendo `main_goal` y la etapa,
+que no se usan): reducirlo a 3 pasos queda pendiente.
+
+Corrección: `/dev-preview/calendario` existe (más arriba se dice que
+Calendario no tiene vista de ejemplo). Los arreglos 5 y 6 no se han mirado
+allí.
+
+Prueba en la app, hecha por Claude el 26 de noviembre en local
+(`localhost:3000`, base de datos real) con una cuenta de prueba que creó
+Dani (Biología, Castilla-La Mancha, examen el 1 de junio de 2027, 12 h,
+cinco días). Resultado:
+
+- "Llevar todos los demás": pasa de 3 a 75 temas y se mantiene al recargar.
+- Crear y recalcular el plan (arreglos 3, 4 y 7): sin errores; 366
+  sesiones; el resumen y el aviso se quedan en Inicio. Recalcular tres
+  veces deja siempre el mismo número de pendientes (sin duplicados) y la
+  sesión manual atrasada de la cuenta sigue en su sitio.
+- "+XP" (5): en Calendario, completar un repaso enseña "+10 XP" y el total
+  sube de 20 a 30; un práctico, "+15 XP". En Hoy no había sesiones ese
+  día (jueves no es día de estudio en la cuenta): visto solo en ejemplo.
+- Borrar (6): al borrar el repaso completado, "Repasos hechos" baja de 5 a
+  4 y el XP vuelve a 20. Al recalcular, ese repaso vuelve a planificarse.
+- Rotación (3): con dos prácticos, tras completar el primero y recalcular,
+  el siguiente (4 de diciembre) es el otro.
+- Pocas horas (2): con 2 h a la semana salen 87 sesiones, 18 temas a 1 por
+  semana, 0 prácticos y 0 simulacros, el aviso de "no llegas" (56 sin
+  planificar) y el de los prácticos. Las horas se devolvieron a 12 y se
+  recalculó.
+- Sin reproducir: el arreglo 1 (no había repasos atrasados; solo lo cubren
+  las pruebas), los simulacros de la rotación y los caminos de fallo del
+  arreglo 4.
+- Visto de paso: con 12 h, 75 temas y examen el 1 de junio el plan dice "no
+  llegas, harían falta 14 horas" y deja 7 temas sin planificar. En "Lo
+  siguiente" de Inicio, dos temas del mismo día salieron como Tema 3 y
+  luego Tema 2.
+- La cuenta de prueba queda con 75 temas elegidos, un práctico añadido
+  ("Práctico de prueba 2"), un práctico completado y un repaso borrado.
+  Dani puede borrarla en Supabase cuando no haga falta.
+
+Falta, por este orden (del 1 al 7 están hechos, arriba; se sigue por el 8):
+
 8. Producto: "Llevar todos los temas", marcar estudiado en Temas con XP y
    repasos, primeros pasos guiados en Inicio y fecha de examen opcional.
 
@@ -453,7 +667,8 @@ onboarding. El resto sigue pendiente.
   pasa de 1000 y Supabase corta por defecto ahí: desaparecerían sesiones
   futuras y el plan se calcularía con datos incompletos. Arreglo: leer por
   ventana de fechas y sacar XP y racha con una consulta aparte.
-- **Repaso atrasado que vuelve** (confirmado, simulado): el plan solo sabe
+- **Repaso atrasado que vuelve** (arreglado el 26 de noviembre, ver "Dónde
+  lo dejamos"; confirmado, simulado): el plan solo sabía
   cuántos repasos se han hecho, no cuáles. Tras completar un repaso
   atrasado, recalcular lo pone otra vez hoy. Arreglo: pasar al planificador
   la fecha del último repaso completado.
@@ -462,20 +677,24 @@ onboarding. El resto sigue pendiente.
   las 00:00 y las 02:00, Inicio vive en el día anterior y la racha y el XP
   no cuadran con Hoy y Calendario. Arreglo: una sola función de fecha en
   hora de Madrid para todo, incluida `summarizeGame`.
-- **El plan se sustituye en dos pasos** (confirmado): borra y luego inserta.
+- **El plan se sustituye en dos pasos** (arreglado el 26 de noviembre salvo
+  las dos pestañas a la vez, ver "Dónde lo dejamos"; confirmado): borra y luego inserta.
   Si falla a medias deja el calendario vacío; dos pulsaciones a la vez (dos
   pestañas) duplican el plan. Arreglo: una función SQL que haga las dos
   cosas en una transacción.
-- **Con pocas horas el plan se pasa** (confirmado, simulado): con 1 hora a
+- **Con pocas horas el plan se pasa** (arreglado el 26 de noviembre, ver
+  "Dónde lo dejamos"; confirmado, simulado): con 1 hora a
   la semana planifica 3 la primera semana y dice que se llega al examen.
   Los prácticos se colocan sin mirar si caben en el día.
-- **Recalcular reinicia las rotaciones** (confirmado): quien recalcula cada
+- **Recalcular reinicia las rotaciones** (arreglado el 26 de noviembre, ver
+  "Dónde lo dejamos"; confirmado): quien recalcula cada
   semana recibe siempre el mismo primer práctico y el simulacro del mismo
   tema. Usar `last_worked_date`, `last_review_date` y `simulation_count`,
   que se guardan y nadie lee.
 - **Deshacer y borrar desincronizan el progreso** (confirmado): desmarcar
   una sesión de estudio quita "estudiado" aunque el tema se marcara a mano;
-  borrar una sesión completada no resta el repaso; con Temas abierto en
+  borrar una sesión completada no resta el repaso (esto último, arreglado
+  el 26 de noviembre); con Temas abierto en
   otra pestaña, el siguiente toque pisa el contador de repasos.
 - **Progreso mezcla especialidades** (confirmado) y mide las sesiones
   cumplidas sobre el total, incluidas las 400 futuras, así que crear un
@@ -483,11 +702,12 @@ onboarding. El resto sigue pendiente.
 - **Un fallo de red al leer el perfil manda al onboarding** (confirmado) en
   Calendario, Temas, Prácticos y Progreso. Un único
   `requireOnboardedProfile()` para las siete páginas.
-- **Crear el plan desde Inicio no enseña el resultado** (confirmado
+- **Crear el plan desde Inicio no enseña el resultado** (arreglado el 26 de
+  noviembre; confirmado
   leyendo): la tarjeta desaparece al crearse el plan y con ella el aviso de
   "no llegas con tus horas".
 - Menores: el "+XP" que se enseña al completar no incluye el extra de racha
-  el día que se alcanza; "Próxima sesión" del calendario cuenta completadas
+  el día que se alcanza (arreglado el 26 de noviembre); "Próxima sesión" del calendario cuenta completadas
   y canceladas; cada salida de un campo de texto guarda aunque no cambie
   nada y admite título vacío.
 
@@ -532,7 +752,7 @@ Revisado sin problemas: redirecciones de las rutas de autenticación,
   falla con "elige primero los temas". El onboarding pide 9 campos de
   golpe, dos de ellos sin uso (`main_goal`, etapa educativa). Dejarlo en 3
   pasos y poner en Inicio una lista: temas, prácticos, plan.
-- **La fecha de examen es obligatoria** y admite fechas pasadas. Muchos
+- **La fecha de examen es obligatoria** (arreglado el 26 de noviembre) y admite fechas pasadas. Muchos
   opositores no la saben hasta la convocatoria; el planificador ya funciona
   sin fecha, el formulario no.
 - **El plan se queda viejo sin avisar** al cambiar de especialidad, días,
@@ -587,8 +807,8 @@ Revisado sin problemas: redirecciones de las rutas de autenticación,
 - La base de datos solo distingue tres tipos de sesión (`study_topic`,
   `practical`, `rest`). Repasos y simulacros se reconocen por el título
   ("Repaso: …", "Simulacro: …"); ver `lib/study/sessions.ts`.
-- Recalcular el plan borra las sesiones con `is_auto_generated = true` y
-  pendientes, también las atrasadas (cambiado el 23 de noviembre: antes se
+- Recalcular el plan guarda primero el nuevo y después borra, por id, las
+  sesiones con `is_auto_generated = true` y pendientes, también las atrasadas (cambiado el 23 de noviembre: antes se
   quedaban para siempre en "Se te ha quedado atrás"). No toca las manuales,
   las completadas ni las canceladas.
 - No hay clave de administrador de Supabase en el proyecto. Con la seguridad

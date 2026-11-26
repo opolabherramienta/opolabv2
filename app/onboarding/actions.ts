@@ -7,6 +7,11 @@ type OnboardingActionState = {
   error: string;
 };
 
+// "Today" is the date in mainland Spain, whatever the server clock says.
+function madridDateKey() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
+}
+
 function getRequiredString(formData: FormData, field: string) {
   const value = formData.get(field);
 
@@ -71,7 +76,6 @@ async function saveOppositionProfile(formData: FormData, destination: string) {
     !educationStageId ||
     !specialtyId ||
     !autonomousCommunityId ||
-    !oppositionDate ||
     weeklyAvailableHours === null ||
     defaultTopicDurationMinutes === null ||
     defaultPracticalDurationMinutes === null ||
@@ -79,6 +83,27 @@ async function saveOppositionProfile(formData: FormData, destination: string) {
     availableDays.length === 0
   ) {
     return { error: "Completa todos los campos principales del onboarding." };
+  }
+
+  // The exam date is optional: many people do not know it until the call is
+  // published. When given, it must be a real day from today on.
+  if (oppositionDate) {
+    const parsed = new Date(`${oppositionDate}T12:00:00Z`);
+
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(oppositionDate) ||
+      Number.isNaN(parsed.getTime()) ||
+      parsed.toISOString().slice(0, 10) !== oppositionDate
+    ) {
+      return { error: "La fecha del examen no es válida." };
+    }
+
+    if (oppositionDate < madridDateKey()) {
+      return {
+        error:
+          "La fecha del examen ya ha pasado. Pon la de tu próxima convocatoria o déjala vacía si aún no la sabes.",
+      };
+    }
   }
 
   if (
@@ -95,7 +120,7 @@ async function saveOppositionProfile(formData: FormData, destination: string) {
       education_stage_id: educationStageId,
       specialty_id: specialtyId,
       autonomous_community_id: autonomousCommunityId,
-      opposition_date: oppositionDate,
+      opposition_date: oppositionDate || null,
       weekly_available_hours: weeklyAvailableHours,
       available_days: availableDays,
       default_topic_duration_minutes: defaultTopicDurationMinutes,

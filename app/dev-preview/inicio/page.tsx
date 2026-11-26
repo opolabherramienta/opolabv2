@@ -11,14 +11,23 @@ const states: BallState[] = Array.from({ length: 75 }, (_, index) => {
   return "selected";
 });
 
-export default function DevPreviewInicio() {
+// `?paso=1` (nothing chosen yet), `?paso=2` (topics chosen) and `?paso=3`
+// (topics and practicals) show the first steps of a new account.
+export default async function DevPreviewInicio({
+  searchParams,
+}: {
+  searchParams: Promise<{ paso?: string }>;
+}) {
+  const step = Number((await searchParams).paso) || 0;
+  const isNew = step > 0;
+
   return (
     <DashboardView
       balls={states.map((state, index) => ({
         id: String(index),
         number: index + 1,
         title: `Tema ${index + 1}`,
-        state,
+        state: isNew ? (step > 1 ? "selected" : "off") : state,
       }))}
       communityName="Andalucía"
       daysRemaining={207}
@@ -33,12 +42,16 @@ export default function DevPreviewInicio() {
         levelPercent: 35,
         xpToNextLevel: 260,
       }}
-      hasPlan
+      hasPlan={!isNew}
       loadError={null}
       oppositionDateLabel="19 de junio de 2027"
-      practicals={{ total: 6, worked: 4, mastered: 2 }}
+      practicals={isNew ? { total: step > 2 ? 3 : 0, worked: 0, mastered: 0 } : { total: 6, worked: 4, mastered: 2 }}
       specialtyName="Biología y Geología"
-      topics={{ selected: 62, summarized: 38, studied: 27, reviews: 41, simulations: 5 }}
+      topics={
+        isNew
+          ? { selected: step > 1 ? 75 : 0, summarized: 0, studied: 0, reviews: 0, simulations: 0 }
+          : { selected: 62, summarized: 38, studied: 27, reviews: 41, simulations: 5 }
+      }
       upcomingTasks={[
         { id: "1", dateLabel: "hoy", isToday: true, title: "Tema 14: La célula eucariota", type: "study_topic", durationLabel: null },
         { id: "2", dateLabel: "mar, 24 nov", isToday: false, title: "Problemas de genética mendeliana", type: "practical", durationLabel: null },

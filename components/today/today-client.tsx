@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfettiBurst, useConfetti } from "@/components/ui/Confetti";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Chip, ProgressRing } from "@/components/ui/Progress";
-import { getSessionXp, summarizeGame } from "@/lib/study/gamification";
+import { getCompletionXp, summarizeGame } from "@/lib/study/gamification";
 import { syncSessionProgress } from "@/lib/study/progress-sync";
 import {
   addDays,
@@ -57,7 +57,8 @@ function formatDay(dateKey: string, withWeekday = true) {
 type RowProps = {
   session: TodaySession;
   busy: boolean;
-  streak: number;
+  /** XP gained by completing this session right now. */
+  xpOnComplete: () => number;
   /** Extra line under the title, such as the day an overdue session was for. */
   note?: string;
   moveLabel?: string;
@@ -65,7 +66,7 @@ type RowProps = {
   onToggle: () => void;
 };
 
-function SessionRow({ busy, moveLabel, note, onMove, onToggle, session, streak }: RowProps) {
+function SessionRow({ busy, moveLabel, note, onMove, onToggle, session, xpOnComplete }: RowProps) {
   const { burst, fire } = useConfetti();
   const [xpPop, setXpPop] = useState<{ id: number; xp: number } | null>(null);
   const xpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,7 +76,7 @@ function SessionRow({ busy, moveLabel, note, onMove, onToggle, session, streak }
   function toggle() {
     if (!isCompleted) {
       fire();
-      const xp = getSessionXp(session.taskType, session.title, streak);
+      const xp = xpOnComplete();
 
       if (xp > 0) {
         if (xpTimer.current) clearTimeout(xpTimer.current);
@@ -374,7 +375,7 @@ export function TodayClient({
               onMove={() => move(session, tomorrowKey)}
               onToggle={() => toggle(session)}
               session={session}
-              streak={game.streak}
+              xpOnComplete={() => getCompletionXp(sessions, session)}
             />
           ))}
         </ul>
@@ -432,7 +433,7 @@ export function TodayClient({
                 onMove={() => move(session, todayKey)}
                 onToggle={() => toggle(session)}
                 session={session}
-                streak={game.streak}
+                xpOnComplete={() => getCompletionXp(sessions, session)}
               />
             ))}
           </ul>

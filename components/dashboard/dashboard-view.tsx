@@ -62,7 +62,7 @@ const legend: BallState[] = ["selected", "started", "studied", "mastered"];
 
 function getCountdownMessage(daysRemaining: number | null) {
   if (daysRemaining === null) {
-    return "Pon la fecha de tu examen en Ajustes para ver la cuenta atrás.";
+    return "Cuando sepas la fecha de tu examen, ponla en Ajustes y verás la cuenta atrás. Tu plan funciona igual sin ella.";
   }
 
   if (daysRemaining === 0) {
@@ -76,6 +76,112 @@ function getCountdownMessage(daysRemaining: number | null) {
   }
 
   return "Recta final: repasa lo que ya dominas.";
+}
+
+type Step = {
+  title: string;
+  text: string;
+  done: boolean;
+  optional?: boolean;
+  action?: { href: string; label: string };
+};
+
+// What to do right after signing up, in order. It goes away once there is a
+// plan: from then on Inicio is about the plan itself.
+function FirstSteps({ practicals, topics }: { practicals: number; topics: number }) {
+  const canPlan = topics > 0 || practicals > 0;
+  const steps: Step[] = [
+    {
+      title: "Elige los temas que vas a llevar",
+      text:
+        topics > 0
+          ? `Llevas ${topics} ${topics === 1 ? "tema" : "temas"}. Puedes cambiarlos cuando quieras.`
+          : "Puedes llevarlos todos de un toque o quitar los que no vayas a preparar.",
+      done: topics > 0,
+      action: { href: "/temas", label: topics > 0 ? "Revisar temas" : "Elegir temas" },
+    },
+    {
+      title: "Apunta tus prácticos",
+      text:
+        practicals > 0
+          ? `Tienes ${practicals} ${practicals === 1 ? "práctico apuntado" : "prácticos apuntados"}.`
+          : "Si tu examen tiene supuestos prácticos, apúntalos y el plan les reserva un rato cada semana.",
+      done: practicals > 0,
+      optional: true,
+      action: {
+        href: "/practicos",
+        label: practicals > 0 ? "Ver prácticos" : "Añadir prácticos",
+      },
+    },
+    {
+      title: "Crea tu plan",
+      text: canPlan
+        ? "Ya puedes: pulsa «Crear mi plan» aquí debajo y OpoLab lo reparte por días."
+        : "Cuando tengas tus temas, OpoLab los reparte por días con sus repasos.",
+      done: false,
+    },
+  ];
+  // The step to do now: the first one pending, skipping the optional one.
+  const currentIndex = steps.findIndex((step) => !step.done && !step.optional);
+
+  return (
+    <section aria-labelledby="primeros-pasos" className="edge p-5 sm:p-6">
+      <h2 className="text-xl font-extrabold text-slate-950" id="primeros-pasos">
+        Tus primeros pasos
+      </h2>
+      <p className="mt-1 text-[15px] leading-6 text-slate-600">
+        Tres pasos y tienes tu plan de estudio montado.
+      </p>
+      <ol className="mt-4 space-y-3">
+        {steps.map((step, index) => {
+          const isCurrent = index === currentIndex;
+
+          return (
+            <li
+              className={[
+                "flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl px-4 py-3.5",
+                isCurrent ? "bg-violet-50" : "bg-slate-50",
+              ].join(" ")}
+              key={step.title}
+            >
+              <span
+                aria-hidden
+                className={[
+                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-display text-lg font-extrabold",
+                  step.done
+                    ? "bg-aprobado text-white"
+                    : isCurrent
+                      ? "bg-boli text-white"
+                      : "bg-white text-slate-500",
+                ].join(" ")}
+              >
+                {step.done ? <Icon name="check" size={20} strokeWidth={3} /> : index + 1}
+              </span>
+              <div className="min-w-0 flex-1 basis-52">
+                <p className="text-base font-bold text-slate-950">
+                  {step.title}
+                  {step.optional ? (
+                    <span className="font-medium text-slate-500"> (opcional)</span>
+                  ) : null}
+                  {step.done ? <span className="sr-only"> (hecho)</span> : null}
+                </p>
+                <p className="mt-0.5 text-sm leading-6 text-slate-600">{step.text}</p>
+              </div>
+              {step.action ? (
+                <Button
+                  href={step.action.href}
+                  size="sm"
+                  variant={isCurrent ? "primary" : "secondary"}
+                >
+                  {step.action.label}
+                </Button>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
 }
 
 export function DashboardView({
@@ -97,6 +203,8 @@ export function DashboardView({
   const weekPercent = weekTotal > 0 ? (week.completed / weekTotal) * 100 : 0;
   const studiedPercent =
     topics.selected > 0 ? (topics.studied / topics.selected) * 100 : 0;
+  // The plan is built from the chosen topics, or from practicals alone.
+  const canPlan = topics.selected > 0 || practicals.total > 0;
 
   return (
     <div className="space-y-6">
@@ -231,7 +339,14 @@ export function DashboardView({
         </div>
       </section>
 
-      {!hasPlan ? <GeneratePlanCard hasPlan={false} /> : null}
+      {!hasPlan ? (
+        <FirstSteps practicals={practicals.total} topics={topics.selected} />
+      ) : null}
+
+      {/* On screen from the moment there is something to plan: creating the
+          plan must not hide its own summary and warnings, and this is where
+          the plan is recalculated. */}
+      {hasPlan || canPlan ? <GeneratePlanCard hasPlan={hasPlan} /> : null}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.25fr_1fr]">
         {/* Temario as balls */}

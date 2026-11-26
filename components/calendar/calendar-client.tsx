@@ -6,8 +6,8 @@ import { ConfettiBurst, useConfetti } from "@/components/ui/Confetti";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { fieldClasses } from "@/components/ui/Input";
 import { Chip } from "@/components/ui/Progress";
-import { getSessionXp, summarizeGame } from "@/lib/study/gamification";
-import { syncSessionProgress } from "@/lib/study/progress-sync";
+import { getCompletionXp } from "@/lib/study/gamification";
+import { revertsProgressOnDelete, syncSessionProgress } from "@/lib/study/progress-sync";
 import { createClient } from "@/lib/supabase/client";
 
 type CalendarTaskType = "study_topic" | "practical" | "rest";
@@ -315,7 +315,8 @@ type SessionRowProps = {
   onLocalChange: (patch: Partial<CalendarSession>) => void;
   onToggleEdit: () => void;
   onUpdate: (patch: Partial<CalendarSession>) => void;
-  streak: number;
+  /** XP gained by completing this session right now. */
+  xpOnComplete: () => number;
 };
 
 function SessionRow({
@@ -327,7 +328,7 @@ function SessionRow({
   onToggleEdit,
   onUpdate,
   session,
-  streak,
+  xpOnComplete,
 }: SessionRowProps) {
   const { burst, fire } = useConfetti();
   const [xpPop, setXpPop] = useState<{ id: number; xp: number } | null>(null);
@@ -343,7 +344,7 @@ function SessionRow({
     }
 
     fire();
-    const xp = getSessionXp(session.taskType, session.title, streak);
+    const xp = xpOnComplete();
 
     if (xp > 0) {
       if (xpTimer.current) clearTimeout(xpTimer.current);
@@ -570,31 +571,18 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
     "estimated_duration_minutes",
   ].join(", ");
 
-  // Streak as of now, so the XP shown on completing matches the dashboard.
-  const streak = useMemo(
-    () =>
-      summarizeGame(
-        sessions.map((session) => ({
-          taskType: session.taskType,
-          title: session.title,
-          status: session.status,
-          completedAt: session.completedAt,
-          taskDate: session.taskDate,
-        })),
-      ).streak,
-    [sessions],
-  );
-
   // Completing a planned session also moves the topic or practical forward,
   // and undoing it moves it back. A failure here never blocks the calendar.
-  async function syncProgress(session: CalendarSession, direction: 1 | -1) {
+  async function syncProgress(
+    session: CalendarSession,
+    direction: 1 | -1,
+    done = "La sesión se ha guardado",
+  ) {
     try {
       await syncSessionProgress(supabase, userId, session, direction);
     } catch (syncError) {
       console.error("Error actualizando el progreso:", syncError);
-      setError(
-        "La sesión se ha guardado, pero no se pudo actualizar el progreso del tema o práctico.",
-      );
+      setError(`${done}, pero no se pudo actualizar el progreso del tema o práctico.`);
     }
   }
 
@@ -779,6 +767,7 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
 
   async function deleteSession(sessionId: string) {
     const previousSessions = sessions;
+    const deletedSession = sessions.find((session) => session.id === sessionId);
 
     setError("");
     setDeletingIds((current) => new Set(current).add(sessionId));
@@ -803,6 +792,12 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
 
       if (editingId === sessionId) {
         setEditingId(null);
+      }
+
+      // A completed session takes its review, mock exam or practical attempt
+      // with it, the same as marking it pending again.
+      if (deletedSession && revertsProgressOnDelete(deletedSession, previousSessions)) {
+        await syncProgress(deletedSession, -1, "La sesión se ha eliminado");
       }
     } catch (saveError) {
       console.error("Error guardando sesión:", saveError);
@@ -1057,7 +1052,7 @@ export function CalendarClient({ initialSessions, userId }: CalendarClientProps)
                   }
                   onUpdate={(patch) => updateSession(session.id, patch)}
                   session={session}
-                  streak={streak}
+                  xpOnComplete={() => getCompletionXp(sessions, session)}
                 />
               ))}
             </ul>

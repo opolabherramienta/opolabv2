@@ -26,13 +26,28 @@ fallos conocidos del plan y después entra Silvia.
 
 Todo es trabajo de Claude con Dani mirando; no depende de nadie.
 
-- [ ] Los arreglos 1 a 7 del plan ("Dónde lo dejamos" en ESTADO.md):
-      repaso que vuelve, pocas horas, rotaciones, sustituir el plan sin
-      dejarlo a medias, "+XP", borrar resta el repaso, tarjeta del plan.
+- [ ] Los arreglos 1 a 7 del plan ("Dónde lo dejamos" en ESTADO.md).
+      Hechos el 26 nov y probados ese día por Claude en local con una
+      cuenta de prueba real; sin commit ni subir.
+  - [ ] 1. Repaso atrasado que vuelve (con pruebas; en la app no se pudo
+        reproducir: la cuenta no tenía repasos atrasados).
+  - [x] 2. Plan con pocas horas.
+  - [x] 3. Rotaciones al recalcular (visto con prácticos; simulacros solo
+        en pruebas).
+  - [x] 4. Sustituir el plan sin dejarlo a medias.
+  - [x] 5. El "+XP" al completar (Calendario con cuenta real; Hoy en la
+        vista de ejemplo).
+  - [x] 6. Borrar una sesión completada resta el repaso.
+  - [x] 7. La tarjeta del plan sigue a la vista en Inicio.
 - [ ] Del punto 8, lo que más se nota el primer día:
-  - [ ] "Llevar todos / ninguno" en Temas.
-  - [ ] Fecha de examen opcional (y que no admita fechas pasadas).
-  - [ ] Primeros pasos en Inicio: temas, prácticos, plan.
+  - [x] "Llevar todos / ninguno" en Temas (26 nov, probado con cuenta
+        real).
+  - [x] Fecha de examen opcional (y que no admita fechas pasadas). Hecho
+        el 26 nov y probado en Ajustes con cuenta real; el onboarding usa
+        el mismo formulario, sin probar con una cuenta nueva.
+  - [ ] Primeros pasos en Inicio: temas, prácticos, plan (hecho el 26 nov,
+        visto en `/dev-preview/inicio?paso=1`; sin probar con una cuenta
+        recién creada).
   - [ ] Marcar "Estudiado" en Temas cuenta para el plan, el XP y los repasos.
 - [ ] Erratas y mensajes en inglés ("contrasena", "sesion", errores de
       Supabase).

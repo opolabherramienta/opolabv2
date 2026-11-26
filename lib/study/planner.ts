@@ -40,6 +40,13 @@ export type PlanTopic = {
   studiedOnKey?: string | null;
   /** Reviews already completed since that day. */
   reviewsDone?: number;
+  /**
+   * Day of the last completed review, when known. A late review covers every
+   * review that was due up to that day, so they are not planned again.
+   */
+  lastReviewOnKey?: string | null;
+  /** Mock exams already done: the ones with fewer go first. */
+  simulationCount?: number;
 };
 
 /** Time already taken by sessions the plan must leave alone. */
@@ -52,6 +59,9 @@ export type PlanPractical = {
   id: string;
   name: string;
   status: "not_started" | "worked" | "mastered";
+  /** Last day it was worked on, when known: the longest untouched goes first. */
+  lastWorkedOnKey?: string | null;
+  timesWorked?: number;
 };
 
 export type PlanInput = {
@@ -94,6 +104,8 @@ export type PlanSummary = {
   newTopicsPerWeek: number;
   /** New topics that do not fit in the calendar generated now. */
   topicsLeftForLater: number;
+  /** True when there are practicals to work on and no week had room for one. */
+  practicalsLeftOut: boolean;
   /** False when the pace needed to finish before the exam exceeds the time given. */
   reachesExam: boolean;
   /** Weekly hours that would be needed to finish the first pass in time. */
@@ -139,6 +151,7 @@ function emptyResult(reason: PlanSummary["reason"]): PlanResult {
       firstPassEndKey: null,
       newTopicsPerWeek: 0,
       topicsLeftForLater: 0,
+      practicalsLeftOut: false,
       reachesExam: true,
       hoursPerWeekNeeded: null,
       reason,
@@ -190,13 +203,6 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
   const used = new Map(days.map((key) => [key, 0]));
   const tasks: PlannedTask[] = [];
 
-  for (const slot of input.busy ?? []) {
-    if (remaining.has(slot.dateKey)) {
-      remaining.set(slot.dateKey, (remaining.get(slot.dateKey) ?? 0) - Math.max(0, slot.minutes));
-      used.set(slot.dateKey, (used.get(slot.dateKey) ?? 0) + 1);
-    }
-  }
-
   // Weeks run Monday to Sunday, counted from the week of today.
   const today = dateFromKey(todayKey);
   const firstMondayKey = addDays(todayKey, -((today.getDay() + 6) % 7));
@@ -208,14 +214,47 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
     daysByWeek.set(week, [...(daysByWeek.get(week) ?? []), key]);
   }
 
-  // A session fits when there is time left, or when the day is still empty:
-  // a day too short for a whole topic must not block the plan forever.
-  const fits = (key: string, minutes: number) =>
+  // Each week has the weekly time and no more. The week of today and the
+  // week of the exam are usually shorter: they get their share of it.
+  const weekRemaining = new Map<number, number>();
+  const weekUsed = new Map<number, number>();
+
+  for (const [week, weekDays] of daysByWeek) {
+    weekRemaining.set(
+      week,
+      Math.round(weeklyMinutes * Math.min(1, weekDays.length / availableDays.length)),
+    );
+    weekUsed.set(week, 0);
+  }
+
+  const take = (key: string, minutes: number, sessions: number) => {
+    const week = weekOf(key);
+
+    remaining.set(key, (remaining.get(key) ?? 0) - minutes);
+    used.set(key, (used.get(key) ?? 0) + sessions);
+    weekRemaining.set(week, (weekRemaining.get(week) ?? 0) - minutes);
+    weekUsed.set(week, (weekUsed.get(week) ?? 0) + sessions);
+  };
+
+  for (const slot of input.busy ?? []) {
+    if (remaining.has(slot.dateKey)) {
+      take(slot.dateKey, Math.max(0, slot.minutes), 1);
+    }
+  }
+
+  // A session fits in a day when there is time left, or when the day is
+  // still empty: a day too short for a whole topic must not block the plan.
+  const fitsDay = (key: string, minutes: number) =>
     (remaining.get(key) ?? 0) >= minutes || used.get(key) === 0;
+  const weekRoom = (key: string) => weekRemaining.get(weekOf(key)) ?? 0;
+
+  // The same goes for the week: within its time, or as the only session of
+  // a week too short for it. An empty day alone is not enough.
+  const fits = (key: string, minutes: number) =>
+    fitsDay(key, minutes) && (weekRoom(key) >= minutes || weekUsed.get(weekOf(key)) === 0);
 
   const place = (key: string, task: Omit<PlannedTask, "task_date">) => {
-    remaining.set(key, (remaining.get(key) ?? 0) - task.estimated_duration_minutes);
-    used.set(key, (used.get(key) ?? 0) + 1);
+    take(key, task.estimated_duration_minutes, 1);
     tasks.push({ ...task, task_date: key });
   };
 
@@ -241,11 +280,22 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
         priorityOrder[a.priority] - priorityOrder[b.priority] ||
         (a.number ?? Number.MAX_SAFE_INTEGER) - (b.number ?? Number.MAX_SAFE_INTEGER),
     );
-  const pendingPracticals = input.practicals.filter(
-    (practical) => practical.status !== "mastered",
-  );
-  const weeklyPracticalMinutes = pendingPracticals.length > 0 ? practicalMinutes : 0;
+  // The rotation picks up where the user left it: the practical untouched
+  // for longest first, so recalculating does not always start with the same.
+  const pendingPracticals = input.practicals
+    .filter((practical) => practical.status !== "mastered")
+    .sort(
+      (a, b) =>
+        (a.lastWorkedOnKey ?? "").localeCompare(b.lastWorkedOnKey ?? "") ||
+        (a.timesWorked ?? 0) - (b.timesWorked ?? 0),
+    );
   const minutesPerNewTopic = topicMinutes + REVIEW_OFFSETS.length * reviewMinutes;
+  // With little time, topics go first: practicals and mock exams only enter
+  // a week that still has room for a new topic and its reviews after them.
+  const topicReserve = newQueue.length > 0 ? minutesPerNewTopic : 0;
+  const wantedPracticalMinutes = pendingPracticals.length > 0 ? practicalMinutes : 0;
+  const weeklyPracticalMinutes =
+    weeklyMinutes >= wantedPracticalMinutes + topicReserve ? wantedPracticalMinutes : 0;
   const paceByTime = Math.max(
     1,
     Math.floor((weeklyMinutes - weeklyPracticalMinutes) / minutesPerNewTopic),
@@ -253,17 +303,20 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
   let newTopicsPerWeek = paceByTime;
   let reachesExam = true;
   let hoursPerWeekNeeded: number | null = null;
+  let hoursForPace = 0;
 
   if (examEndKey && newQueue.length > 0) {
     const weeksToExam = Math.max(1, Math.ceil((daysBetween(todayKey, examEndKey) + 1) / 7));
     const firstPassWeeks = Math.max(1, Math.floor(weeksToExam * FIRST_PASS_SHARE));
     const paceNeeded = Math.ceil(newQueue.length / firstPassWeeks);
 
+    // Counts the weekly practical even when it does not fit today, so the
+    // figure does not grow once the user gives the plan more hours.
+    hoursForPace = Math.ceil((paceNeeded * minutesPerNewTopic + wantedPracticalMinutes) / 60);
+
     if (paceNeeded > paceByTime) {
       reachesExam = false;
-      hoursPerWeekNeeded = Math.ceil(
-        (paceNeeded * minutesPerNewTopic + weeklyPracticalMinutes) / 60,
-      );
+      hoursPerWeekNeeded = hoursForPace;
     } else {
       // No need to rush: spread the first pass over the time reserved for it.
       newTopicsPerWeek = paceNeeded;
@@ -285,7 +338,10 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
     }
   }
   let practicalIndex = 0;
-  let simulationIndex = 0;
+  // Mock exams done so far, plus the ones this plan hands out.
+  const simulationsDone = new Map(
+    input.topics.map((topic) => [topic.baseTopicId, Math.max(0, topic.simulationCount ?? 0)]),
+  );
   let maintenanceIndex = 0;
   let firstPassEndKey: string | null = null;
 
@@ -297,11 +353,19 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
     const lastDay = weekDays[weekDays.length - 1];
     const practicalDay = weekDays.length > 1 ? weekDays[weekDays.length - 2] : lastDay;
 
-    // One practical a week.
-    if (pendingPracticals.length > 0) {
+    // One practical a week, on the day before the last one when it fits
+    // there. A week without room for it goes without.
+    const practicalKey =
+      pendingPracticals.length > 0 && weekRoom(lastDay) >= practicalMinutes + topicReserve
+        ? ([practicalDay, ...[...weekDays].reverse()].find((key) =>
+            fitsDay(key, practicalMinutes),
+          ) ?? null)
+        : null;
+
+    if (practicalKey) {
       const practical = pendingPracticals[practicalIndex % pendingPracticals.length];
       practicalIndex++;
-      place(practicalDay, {
+      place(practicalKey, {
         kind: "practical",
         title: `${PRACTICAL_PREFIX}${shorten(practical.name, 70)}`,
         description: "Resuélvelo sin mirar la solución y apunta dónde te atascas.",
@@ -315,9 +379,14 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
 
     // A timed mock exam every other week: hold the time until we know
     // which topics are already studied by then.
-    if (week % 2 === 1 && fits(lastDay, simulationMinutes)) {
+    if (
+      week % 2 === 1 &&
+      fitsDay(lastDay, simulationMinutes) &&
+      weekRoom(lastDay) >= simulationMinutes + topicReserve &&
+      weeklyMinutes >= weeklyPracticalMinutes + simulationMinutes + topicReserve
+    ) {
       simulationHold.add(lastDay);
-      remaining.set(lastDay, (remaining.get(lastDay) ?? 0) - simulationMinutes);
+      take(lastDay, simulationMinutes, 0);
     }
   }
 
@@ -327,12 +396,27 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
     .filter((topic) => topic.studiedOnKey)
     .sort((a, b) => (a.studiedOnKey as string).localeCompare(b.studiedOnKey as string));
 
+  // A topic reviewed by hand in Temas, or one whose spaced reviews are over,
+  // waits two weeks from its last review before a maintenance one.
+  for (const topic of studiedPool) {
+    if (topic.lastReviewOnKey) {
+      lastMaintenance.set(topic.baseTopicId, topic.lastReviewOnKey);
+    }
+  }
+
   for (const topic of owedReviews) {
     const studiedOnKey = topic.studiedOnKey as string;
+    const lastReviewOnKey = topic.lastReviewOnKey ?? null;
     const targets: Array<{ index: number; key: string }> = [];
 
     for (let index = Math.max(0, topic.reviewsDone ?? 0); index < REVIEW_OFFSETS.length; index++) {
       const dueKey = addDays(studiedOnKey, REVIEW_OFFSETS[index]);
+
+      if (lastReviewOnKey && dueKey <= lastReviewOnKey) {
+        // Covered by a review done on or after its day: the catch-up for
+        // several overdue reviews counts as one, so the count alone misses it.
+        continue;
+      }
 
       if (dueKey >= todayKey) {
         targets.push({ index, key: dueKey });
@@ -362,9 +446,11 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
     }
 
     // Maintenance reviews start two weeks after the last spaced one.
+    const studiedKey = studiedOnKey > todayKey ? todayKey : studiedOnKey;
+
     lastMaintenance.set(
       topic.baseTopicId,
-      lastKey ?? (studiedOnKey > todayKey ? todayKey : studiedOnKey),
+      lastKey ?? (lastReviewOnKey && lastReviewOnKey > studiedKey ? lastReviewOnKey : studiedKey),
     );
   }
 
@@ -372,11 +458,17 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
     const week = weekOf(key);
 
     if (simulationHold.has(key)) {
-      remaining.set(key, (remaining.get(key) ?? 0) + simulationMinutes);
+      take(key, -simulationMinutes, 0);
 
       if (simulationPool.length > 0) {
-        const topic = simulationPool[simulationIndex % simulationPool.length];
-        simulationIndex++;
+        // The topic with fewest mock exams; on a tie, the one studied first.
+        const topic = simulationPool.reduce((best, candidate) =>
+          (simulationsDone.get(candidate.baseTopicId) ?? 0) <
+          (simulationsDone.get(best.baseTopicId) ?? 0)
+            ? candidate
+            : best,
+        );
+        simulationsDone.set(topic.baseTopicId, (simulationsDone.get(topic.baseTopicId) ?? 0) + 1);
         place(key, {
           kind: "simulation",
           title: `${SIMULATION_PREFIX}${topicLabel(topic)}`,
@@ -431,7 +523,11 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
     }
 
     // Spare time keeps alive what was already studied before this plan.
-    if (maintenanceQueue.length > 0 && (remaining.get(key) ?? 0) >= reviewMinutes) {
+    if (
+      maintenanceQueue.length > 0 &&
+      (remaining.get(key) ?? 0) >= reviewMinutes &&
+      weekRoom(key) >= reviewMinutes
+    ) {
       for (let attempt = 0; attempt < maintenanceQueue.length; attempt++) {
         const topic = maintenanceQueue[(maintenanceIndex + attempt) % maintenanceQueue.length];
         const last = lastMaintenance.get(topic.baseTopicId);
@@ -447,6 +543,13 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
         }
       }
     }
+  }
+
+  // Topics that found no room before the exam: the plan does not reach it,
+  // whatever the pace said. Beyond the horizon they are just left for later.
+  if (reachesExam && examEndKey === endKey && newQueue.length > 0) {
+    reachesExam = false;
+    hoursPerWeekNeeded = Math.max(hoursForPace, Math.floor(weeklyMinutes / 60) + 1);
   }
 
   tasks.sort(
@@ -469,6 +572,7 @@ export function generateStudyPlan(input: PlanInput): PlanResult {
       firstPassEndKey,
       newTopicsPerWeek: initialTopicCount === 0 ? 0 : newTopicsPerWeek,
       topicsLeftForLater: newQueue.length,
+      practicalsLeftOut: pendingPracticals.length > 0 && count("practical") === 0,
       reachesExam,
       hoursPerWeekNeeded,
       reason: tasks.length === 0 ? "no-topics" : "ok",

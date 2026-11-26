@@ -4,6 +4,7 @@ import { useActionState, type ReactNode } from "react";
 import { saveOnboardingAction, saveSettingsAction } from "@/app/onboarding/actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { madridDateKey } from "@/lib/study/sessions";
 
 type CatalogOption = {
   id: string;
@@ -142,9 +143,9 @@ export function OnboardingForm({
         <Input
           defaultValue={profile?.opposition_date ?? ""}
           id="opposition_date"
-          label="Fecha de oposición"
+          label="Fecha del examen (si la sabes)"
+          min={madridDateKey()}
           name="opposition_date"
-          required
           type="date"
         />
         <Input

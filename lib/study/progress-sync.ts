@@ -8,6 +8,32 @@ type LinkedSession = {
   userPracticalId?: string | null;
 };
 
+type DeletedSession = LinkedSession & { id: string; status: string | null };
+
+/**
+ * True when deleting `session` must take back the progress it gave: it was
+ * completed and linked to a topic or practical. A study session only takes
+ * "studied" back when no other completed study session of the topic is left.
+ */
+export function revertsProgressOnDelete(session: DeletedSession, all: DeletedSession[]) {
+  if (session.status !== "completed") return false;
+
+  const kind = getSessionKind(session.taskType, session.title);
+
+  if (kind === "rest") return false;
+  if (kind === "practical") return Boolean(session.userPracticalId);
+  if (!session.userTopicId) return false;
+  if (kind !== "study") return true;
+
+  return !all.some(
+    (other) =>
+      other.id !== session.id &&
+      other.status === "completed" &&
+      other.userTopicId === session.userTopicId &&
+      getSessionKind(other.taskType, other.title) === "study",
+  );
+}
+
 // Completing a planned session also moves its topic or practical forward, and
 // undoing it moves it back. Throws when the progress could not be saved; the
 // session itself is already stored by then.

@@ -132,6 +132,22 @@ function getSupabaseErrorMessage(error: unknown) {
   return "No se pudo guardar el tema.";
 }
 
+const selectColumns = [
+  "id",
+  "base_topic_id",
+  "is_selected",
+  "summary_done",
+  "studied_done",
+  "review_count",
+  "simulation_count",
+  "priority_level",
+  "mastery_level",
+  "personal_notes",
+].join(", ");
+
+/** Ids travel in the URL of the request: keep each one short. */
+const BULK_CHUNK = 100;
+
 function getTopicLabel(topic: TopicItem) {
   if (topic.topicNumber === null) {
     return topic.title;
@@ -145,6 +161,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
   const [topics, setTopics] = useState(initialTopics);
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
+  const [bulkSaving, setBulkSaving] = useState(false);
 
   const stats = useMemo(
     () => ({
@@ -162,18 +179,6 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
 
   async function persistTopic(nextTopic: TopicItem) {
     const payload = buildPayload(userId, nextTopic);
-    const selectColumns = [
-      "id",
-      "base_topic_id",
-      "is_selected",
-      "summary_done",
-      "studied_done",
-      "review_count",
-      "simulation_count",
-      "priority_level",
-      "mastery_level",
-      "personal_notes",
-    ].join(", ");
 
     if (nextTopic.id) {
       const updateResult = await supabase
@@ -288,6 +293,113 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
     }
   }
 
+  // "Llevar todos" and "No llevar ninguno": one write for the whole syllabus
+  // instead of opening every topic. Only the choice changes; resumen,
+  // estudiado, repasos and notes stay as they are.
+  async function selectAll(isSelected: boolean) {
+    const targets = topics.filter((topic) => topic.isSelected !== isSelected);
+
+    if (targets.length === 0 || bulkSaving) {
+      return;
+    }
+
+    const previousTopics = topics;
+
+    setError("");
+    setBulkSaving(true);
+    setTopics((current) => current.map((topic) => ({ ...topic, isSelected })));
+
+    try {
+      // Rows can exist for topics this screen holds no id for yet.
+      const existingResult = await supabase
+        .from("user_topics")
+        .select("id, base_topic_id")
+        .eq("user_id", userId);
+
+      if (existingResult.error) {
+        throw new Error(getSupabaseErrorMessage(existingResult.error));
+      }
+
+      const targetIds = new Set(targets.map((topic) => topic.baseTopicId));
+      const existing = (
+        (existingResult.data ?? []) as Array<{ id: string; base_topic_id: string }>
+      ).filter((row) => targetIds.has(row.base_topic_id));
+      const ids = existing.map((row) => row.id);
+
+      for (let index = 0; index < ids.length; index += BULK_CHUNK) {
+        const updateResult = await supabase
+          .from("user_topics")
+          .update({ is_selected: isSelected })
+          .eq("user_id", userId)
+          .in("id", ids.slice(index, index + BULK_CHUNK));
+
+        if (updateResult.error) {
+          throw new Error(getSupabaseErrorMessage(updateResult.error));
+        }
+      }
+
+      if (isSelected) {
+        const stored = new Set(existing.map((row) => row.base_topic_id));
+        const missing = targets.filter((topic) => !stored.has(topic.baseTopicId));
+
+        if (missing.length > 0) {
+          const insertResult = await supabase
+            .from("user_topics")
+            .insert(missing.map((topic) => buildPayload(userId, { ...topic, isSelected })));
+
+          if (insertResult.error) {
+            throw new Error(getSupabaseErrorMessage(insertResult.error));
+          }
+        }
+      }
+
+      // Read back what is stored, so new rows get their id.
+      const savedResult = await supabase
+        .from("user_topics")
+        .select(selectColumns)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (savedResult.error) {
+        throw new Error(getSupabaseErrorMessage(savedResult.error));
+      }
+
+      // Newest first, so the oldest row of a topic is the one that stays.
+      const savedByTopic = new Map(
+        ((savedResult.data ?? []) as unknown as UserTopicRow[]).map((row) => [
+          row.base_topic_id,
+          row,
+        ]),
+      );
+
+      setTopics((current) =>
+        current.map((topic) => {
+          const row = savedByTopic.get(topic.baseTopicId);
+
+          return row ? rowToTopic(topic, row) : topic;
+        }),
+      );
+    } catch (saveError) {
+      console.error("Error guardando la selección de temas:", saveError);
+      setTopics(previousTopics);
+      setError(
+        `No se pudo guardar la selección: ${getSupabaseErrorMessage(saveError)}. Recarga la página para ver cómo ha quedado.`,
+      );
+    } finally {
+      setBulkSaving(false);
+    }
+  }
+
+  function selectNone() {
+    if (
+      window.confirm(
+        `Vas a dejar de llevar ${stats.selected} temas. Lo que tengas apuntado de cada uno (resumen, repasos, notas) no se borra. ¿Seguimos?`,
+      )
+    ) {
+      void selectAll(false);
+    }
+  }
+
   const { burst, fire } = useConfetti();
   const [celebratedId, setCelebratedId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -320,7 +432,7 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
   );
 
   function changeTopic(topic: TopicItem, patch: Partial<TopicItem>) {
-    if (savingIds.has(topic.baseTopicId)) {
+    if (savingIds.has(topic.baseTopicId) || bulkSaving) {
       return;
     }
 
@@ -393,9 +505,30 @@ export function TopicsClient({ initialTopics, userId }: TopicsClientProps) {
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
               {stats.selected === 0
-                ? "Pulsa una bola del bombo y marca «Lo llevo». No hace falta llevarlos todos."
+                ? "Llévalos todos de un toque, o pulsa una bola del bombo y marca «Lo llevo». No hace falta llevarlos todos."
                 : "Cada bola cambia de color según lo preparado que tengas el tema."}
             </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {stats.selected < topics.length ? (
+                <Button
+                  disabled={bulkSaving}
+                  onClick={() => void selectAll(true)}
+                  variant={stats.selected === 0 ? "primary" : "secondary"}
+                >
+                  {stats.selected === 0 ? "Llevar todos" : "Llevar todos los demás"}
+                </Button>
+              ) : null}
+              {stats.selected > 0 ? (
+                <Button disabled={bulkSaving} onClick={selectNone} variant="secondary">
+                  No llevar ninguno
+                </Button>
+              ) : null}
+              {bulkSaving ? (
+                <span aria-live="polite" className="text-sm font-semibold text-slate-500">
+                  Guardando…
+                </span>
+              ) : null}
+            </div>
           </div>
           <dl className="grid grid-cols-3 gap-2 text-center">
             <div className="rounded-xl bg-slate-50 px-2 py-2.5">

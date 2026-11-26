@@ -98,6 +98,13 @@ export function GeneratePlanCard({ hasPlan }: GeneratePlanCardProps) {
               el plan cuando avances.
             </p>
           ) : null}
+          {summary.practicalsLeftOut ? (
+            <p className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-[15px] leading-6 font-medium text-amber-900">
+              Con tus horas a la semana no cabe un práctico además de los temas,
+              así que el plan pone primero los temas. Si quieres prácticos en el
+              plan, sube tus horas en Ajustes.
+            </p>
+          ) : null}
         </div>
       ) : null}
     </section>
