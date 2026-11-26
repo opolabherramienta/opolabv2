@@ -32,9 +32,13 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
   del día 26 están ejecutados (Dani dijo que están bien, no consta que
   estén ejecutados) enviando un mensaje desde "Cuéntanos qué falla" y
   mirándolo en `/admin/sugerencias`; 2) probar el borrado de cuenta con
-  una cuenta de usar y tirar; 3) mirar que las comprobaciones de GitHub
-  salen en verde; 4) simulación con los números de Silvia. Todo lo del
-  26 de noviembre está subido a `opolab-v2` y publicado en opolab.net.
+  una cuenta de usar y tirar; 3) simulación con los números de Silvia.
+  Todo lo del 26 de noviembre está subido a `opolab-v2` (commit `cc92c19`)
+  y publicado en opolab.net. Comprobado tras subir: Vercel desplegó bien,
+  las comprobaciones de GitHub salieron en verde a la primera, las tres
+  páginas legales y el icono responden, `/test-supabase` da 404 y las
+  cabeceras de seguridad llegan. Sin comprobar en opolab.net con una
+  cuenta: lo de dentro (solo en local).
 - Semana 1 (26 a 29 de noviembre): arreglos 1 a 7 hechos el día 26, sin
   commit y sin probar con cuenta real (la prueba de Dani está en "Dónde lo
   dejamos"). Del punto 8 están hechos "Llevar todos / ninguno" en Temas,
@@ -569,9 +573,7 @@ adelantar lo que no depende de Silvia. Pasan las 62 pruebas, tipos, lint y
   hora y cuenta.
 - GitHub: `.github/workflows/comprobaciones.yml` pasa lint, tipos, pruebas
   (con `TZ=UTC`) y build en cada subida a `opolab-v2` o `main` y en cada
-  pull request. Sin estrenar: se verá en la primera subida. Si GitHub
-  rechaza esa subida por permisos, falta dar al acceso de git permiso para
-  tocar workflows.
+  pull request. Estrenado el 26 de noviembre: en verde.
 - Textos legales a nombre de ALHAJA PRODUCCIONES SC (datos en
   `lib/legal.ts`): `/aviso-legal`, `/privacidad` y `/cookies`, enlazados en
   el pie de la portada, de las pantallas de entrada y de las privadas. El
