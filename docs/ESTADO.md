@@ -22,8 +22,11 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 
 **Lo siguiente**
 
-- Claude: pantalla `/admin/lista-espera` (bloque 1) y, después, los arreglos
-  del planificador (bloque 2). Dani dio el sí a ese orden el 24 de noviembre.
+- Hoja de ruta con fechas hasta la apertura (11 de enero de 2027):
+  `docs/ROADMAP-LANZAMIENTO.md`, propuesta el 26 de noviembre, pendiente de
+  que Dani la confirme. Se revisa con `/lanzamiento`. Propone hacer primero
+  los arreglos del planificador (bloque 2) y dejar `/admin/lista-espera`
+  para Navidad, al revés de lo acordado el 24 de noviembre.
 - Correo de bienvenida: funcionando en opolab.net desde el 24 de noviembre
   (detalle en el bloque 1).
 
@@ -76,6 +79,14 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
       escritorio: "Siguientes pasos", punto 1. Incluye entrar y recuperar la
       contraseña en opolab.net, que están sin probar.
 - [ ] Lo de Castilla-La Mancha: número de bolas, fechas y textos.
+- [ ] Cuenta de Silvia para probar en opolab.net desde cualquier ordenador
+      (pedido por Dani el 24 de noviembre). El registro está cerrado, así
+      que Dani la crea en Supabase > Authentication > Users > Add user >
+      Create new user, con "Auto Confirm User". El perfil lo crea el trigger
+      de registro con el nombre vacío; ponerlo con
+      `update public.profiles set full_name = 'Silvia' where email = '…';`.
+      Ella entra por opolab.net/login ("Ya tengo acceso") y hace la
+      configuración inicial.
 
 **3. Abrir el registro** (sin empezar)
 
@@ -106,6 +117,23 @@ está en las secciones de más abajo. Al retomar, empezar por "Lo siguiente".
 Mejoras del planificador sin fecha (calculadora de bolas, franjas horarias,
 días bloqueados, exportar calendario, PWA, parte B): "Siguientes pasos",
 punto 6.
+
+## Buzón de Silvia
+
+Ideas, fallos, dudas y datos de oposiciones que Silvia apunta con `/silvia`
+(ver `.claude/skills/silvia/SKILL.md`). Claude añade cada entrada al final
+de "Sin revisar por Dani" con su valoración (esfuerzo, gratis o pago,
+cuándo encaja). Dani las revisa: las pasa al mapa de arriba, las descarta o
+las deja en "Revisado" con su decisión. Qué hace hoy la app, pantalla a
+pantalla y en llano: `docs/MAPA-FUNCIONAL.md`.
+
+### Sin revisar por Dani
+
+(Vacío.)
+
+### Revisado
+
+(Vacío.)
 
 ## Qué funciona
 
